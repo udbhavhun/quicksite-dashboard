@@ -3,11 +3,16 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import StatusBadge from '@/components/StatusBadge';
 import ProgressTracker from '@/components/ProgressTracker';
+import DetailedProgressTracker from '@/components/DetailedProgressTracker';
 import OrderSummary from '@/components/OrderSummary';
 import ProjectTimeline from '@/components/ProjectTimeline';
 import PackageCard from '@/components/PackageCard';
+import CustomerRequirements from '@/components/CustomerRequirements';
+import ProjectFeedback from '@/components/ProjectFeedback';
 import { ORDERS, PACKAGES } from '@/lib/data';
-import { Clock, Package, RefreshCw, Zap } from 'lucide-react';
+import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Index = () => {
   const [activeOrder, setActiveOrder] = useState(ORDERS[0]);
@@ -55,10 +60,15 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header userType={viewType} userName={viewType === 'admin' ? 'Admin User' : 'John Doe'} />
       
-      <main className="flex-grow p-6">
+      <main className="flex-grow p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Dashboard Header */}
-          <div className={`flex flex-col md:flex-row md:items-center justify-between mb-8 ${animateIn ? 'animate-fade-in' : 'opacity-0'}`}>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : -20 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row md:items-center justify-between mb-8"
+          >
             <div>
               <h1 className="text-3xl font-bold mb-2">
                 {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
@@ -79,94 +89,146 @@ const Index = () => {
                 Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
               </button>
             </div>
-          </div>
+          </motion.div>
           
           {/* Stats Cards */}
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 ${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '100ms' }}>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex items-center transition-transform duration-300 hover:translate-y-[-5px]">
-              <div className="w-12 h-12 rounded-xl bg-quicksite-blue/10 flex items-center justify-center mr-4">
-                <Package size={20} className="text-quicksite-blue" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Active Orders</p>
-                <h3 className="text-2xl font-semibold">{viewType === 'customer' ? 1 : 5}</h3>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex items-center transition-transform duration-300 hover:translate-y-[-5px]">
-              <div className="w-12 h-12 rounded-xl bg-quicksite-success/10 flex items-center justify-center mr-4">
-                <Zap size={20} className="text-quicksite-success" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Completed Projects</p>
-                <h3 className="text-2xl font-semibold">{viewType === 'customer' ? 1 : 48}</h3>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex items-center transition-transform duration-300 hover:translate-y-[-5px]">
-              <div className="w-12 h-12 rounded-xl bg-quicksite-warning/10 flex items-center justify-center mr-4">
-                <Clock size={20} className="text-quicksite-warning" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Pending Action</p>
-                <h3 className="text-2xl font-semibold">{viewType === 'customer' ? 1 : 3}</h3>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex items-center transition-transform duration-300 hover:translate-y-[-5px]">
-              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mr-4">
-                <RefreshCw size={20} className="text-gray-500" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Recent Updates</p>
-                <h3 className="text-2xl font-semibold">{viewType === 'customer' ? 5 : 24}</h3>
-              </div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+              { icon: <PackageIcon size={20} className="text-quicksite-blue" />, label: "Active Orders", value: viewType === 'customer' ? 1 : 5, bgColor: "bg-quicksite-blue/10" },
+              { icon: <Zap size={20} className="text-quicksite-success" />, label: "Completed Projects", value: viewType === 'customer' ? 1 : 48, bgColor: "bg-quicksite-success/10" },
+              { icon: <Clock size={20} className="text-quicksite-warning" />, label: "Pending Action", value: viewType === 'customer' ? 1 : 3, bgColor: "bg-quicksite-warning/10" },
+              { icon: <MessageSquare size={20} className="text-gray-500" />, label: "New Messages", value: viewType === 'customer' ? 2 : 12, bgColor: "bg-gray-100" }
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white rounded-2xl border border-gray-100 shadow-card p-4 flex items-center transition-transform duration-300 hover:translate-y-[-5px]"
+              >
+                <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mr-3`}>
+                  {stat.icon}
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600">{stat.label}</p>
+                  <h3 className="text-xl font-semibold">{stat.value}</h3>
+                </div>
+              </motion.div>
+            ))}
           </div>
           
           {viewType === 'customer' ? (
             <>
-              {/* Current Project Section */}
-              <div className={`mb-12 ${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '200ms' }}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold">Current Project</h2>
-                  <div className="mt-2 md:mt-0">
-                    <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
-                  </div>
-                </div>
+              {/* Tabs for navigating between different project views */}
+              <Tabs defaultValue="overview" className="mb-8">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>
+                  <TabsTrigger value="requirements">Requirements</TabsTrigger>
+                  <TabsTrigger value="communication">Communication</TabsTrigger>
+                </TabsList>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-1">
-                    <OrderSummary order={activeOrder} />
-                  </div>
-                  <div className="lg:col-span-2">
-                    <ProgressTracker stages={activeOrder.stages} />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Project Timeline */}
-              <div className={`mb-12 ${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '300ms' }}>
-                <h2 className="text-2xl font-semibold mb-6">Project Timeline</h2>
-                <ProjectTimeline order={activeOrder} />
-              </div>
-              
-              {/* Available Packages Section */}
-              <div className={`${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '400ms' }}>
-                <h2 className="text-2xl font-semibold mb-6">Explore More Packages</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {PACKAGES.slice(0, 3).map(pkg => (
-                    <PackageCard key={pkg.id} package={pkg} />
-                  ))}
-                </div>
-              </div>
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Current Project Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                      <h2 className="text-2xl font-semibold">Current Project</h2>
+                      <div className="mt-2 md:mt-0">
+                        <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-1">
+                        <OrderSummary order={activeOrder} />
+                      </div>
+                      <div className="lg:col-span-2">
+                        <ProgressTracker stages={activeOrder.stages} />
+                      </div>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Project Timeline */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Project Timeline</h2>
+                    <ProjectTimeline order={activeOrder} />
+                  </motion.div>
+                  
+                  {/* Available Packages Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Explore More Packages</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {PACKAGES.slice(0, 3).map((pkg, index) => (
+                        <motion.div
+                          key={pkg.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                          transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                        >
+                          <PackageCard package={pkg} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="detailed">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Detailed Project Progress</h2>
+                    <DetailedProgressTracker stages={activeOrder.stages} />
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="requirements">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Project Requirements</h2>
+                    <CustomerRequirements order={activeOrder} userType="customer" />
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="communication">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Project Communication</h2>
+                    <ProjectFeedback order={activeOrder} userType="customer" />
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
             </>
           ) : (
             <>
               {/* Admin Dashboard */}
-              <div className={`mb-12 ${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '200ms' }}>
+              <div className="mb-8">
                 <h2 className="text-2xl font-semibold mb-6">Recent Orders</h2>
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden"
+                >
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -181,8 +243,14 @@ const Index = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {ORDERS.map(order => (
-                          <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150">
+                        {ORDERS.map((order, index) => (
+                          <motion.tr 
+                            key={order.id} 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 10 }}
+                            transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
+                            className="hover:bg-gray-50 transition-colors duration-150"
+                          >
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               {order.id}
                             </td>
@@ -210,28 +278,82 @@ const Index = () => {
                                 View Details
                               </button>
                             </td>
-                          </tr>
+                          </motion.tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                </div>
+                </motion.div>
               </div>
               
-              {/* Package Management */}
-              <div className={`${animateIn ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '300ms' }}>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-semibold">Manage Packages</h2>
-                  <button className="py-2 px-4 bg-quicksite-blue text-white rounded-lg hover:bg-quicksite-dark-blue transition-colors duration-200 flex items-center">
-                    <span className="mr-2">+</span> Add Package
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {PACKAGES.map(pkg => (
-                    <PackageCard key={pkg.id} package={pkg} />
-                  ))}
-                </div>
-              </div>
+              {/* Admin Dashboard Tabs */}
+              <Tabs defaultValue="projectProgress" className="mb-8">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="projectProgress">Project Progress</TabsTrigger>
+                  <TabsTrigger value="customerFeedback">Customer Feedback</TabsTrigger>
+                  <TabsTrigger value="packageManagement">Packages</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="projectProgress">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Active Project Progress</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-1">
+                        <OrderSummary order={ORDERS[0]} />
+                      </div>
+                      <div className="lg:col-span-2">
+                        <DetailedProgressTracker stages={ORDERS[0].stages} />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-6">
+                      <CustomerRequirements order={ORDERS[0]} userType="admin" />
+                    </div>
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="customerFeedback">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-2xl font-semibold mb-6">Customer Communication</h2>
+                    <ProjectFeedback order={ORDERS[0]} userType="admin" />
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="packageManagement">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-semibold">Manage Packages</h2>
+                      <button className="py-2 px-4 bg-quicksite-blue text-white rounded-lg hover:bg-quicksite-dark-blue transition-colors duration-200 flex items-center">
+                        <span className="mr-2">+</span> Add Package
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {PACKAGES.map((pkg, index) => (
+                        <motion.div
+                          key={pkg.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                          <PackageCard key={pkg.id} package={pkg} />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </div>
