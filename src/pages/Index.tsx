@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import StatusBadge from '@/components/StatusBadge';
 import ProgressTracker from '@/components/ProgressTracker';
@@ -14,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activeOrder, setActiveOrder] = useState(ORDERS[0]);
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
