@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import StatusBadge from '@/components/StatusBadge';
@@ -10,7 +9,7 @@ import PackageCard from '@/components/PackageCard';
 import CustomerRequirements from '@/components/CustomerRequirements';
 import ProjectFeedback from '@/components/ProjectFeedback';
 import { ORDERS, PACKAGES } from '@/lib/data';
-import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, AlertTriangle } from 'lucide-react';
+import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, AlertTriangle, ChevronRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -19,7 +18,6 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
 
-  // Simulate loading
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -29,13 +27,11 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // For demonstration, we'll switch between the customer and admin views
   const [viewType, setViewType] = useState<'customer' | 'admin'>('customer');
   
   const toggleView = () => {
     setAnimateIn(false);
     
-    // Add a small delay before changing the view to allow for animation
     setTimeout(() => {
       setViewType(viewType === 'customer' ? 'admin' : 'customer');
       setAnimateIn(true);
@@ -62,7 +58,6 @@ const Index = () => {
       
       <main className="flex-grow p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Dashboard Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : -20 }}
@@ -80,7 +75,7 @@ const Index = () => {
               </p>
             </div>
             
-            <div className="mt-4 md:mt-0 flex items-center">
+            <div className="mt-4 md:mt-0 flex items-center space-x-2">
               <button 
                 onClick={toggleView}
                 className="flex items-center justify-center py-2 px-4 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors duration-200"
@@ -88,10 +83,17 @@ const Index = () => {
                 <RefreshCw size={16} className="mr-2" />
                 Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
               </button>
+              
+              <button
+                onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
+                className="flex items-center justify-center py-2 px-4 bg-quicksite-blue text-white rounded-lg shadow-sm text-sm font-medium hover:bg-quicksite-dark-blue transition-colors duration-200"
+              >
+                <FileText size={16} className="mr-2" />
+                View Order Details
+              </button>
             </div>
           </motion.div>
           
-          {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { icon: <PackageIcon size={20} className="text-quicksite-blue" />, label: "Active Orders", value: viewType === 'customer' ? 1 : 5, bgColor: "bg-quicksite-blue/10" },
@@ -119,7 +121,6 @@ const Index = () => {
           
           {viewType === 'customer' ? (
             <>
-              {/* Tabs for navigating between different project views */}
               <Tabs defaultValue="overview" className="mb-8">
                 <TabsList className="mb-6">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -129,7 +130,6 @@ const Index = () => {
                 </TabsList>
                 
                 <TabsContent value="overview" className="space-y-6">
-                  {/* Current Project Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -152,7 +152,6 @@ const Index = () => {
                     </div>
                   </motion.div>
                   
-                  {/* Project Timeline */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -162,7 +161,6 @@ const Index = () => {
                     <ProjectTimeline order={activeOrder} />
                   </motion.div>
                   
-                  {/* Available Packages Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -220,9 +218,16 @@ const Index = () => {
             </>
           ) : (
             <>
-              {/* Admin Dashboard */}
               <div className="mb-8">
-                <h2 className="text-2xl font-semibold mb-6">Recent Orders</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold">Recent Orders</h2>
+                  <button
+                    onClick={() => navigate('/orders')}
+                    className="text-quicksite-blue hover:text-quicksite-dark-blue flex items-center"
+                  >
+                    View All Orders <ChevronRight size={16} className="ml-1" />
+                  </button>
+                </div>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -286,7 +291,6 @@ const Index = () => {
                 </motion.div>
               </div>
               
-              {/* Admin Dashboard Tabs */}
               <Tabs defaultValue="projectProgress" className="mb-8">
                 <TabsList className="mb-6">
                   <TabsTrigger value="projectProgress">Project Progress</TabsTrigger>
