@@ -1,20 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
+import AppSidebar from '@/components/AppSidebar';
 import StatusBadge from '@/components/StatusBadge';
 import ProgressTracker from '@/components/ProgressTracker';
-import GamifiedProgressTracker from '@/components/GamifiedProgressTracker';
 import OrderSummary from '@/components/OrderSummary';
-import ProjectTimeline from '@/components/ProjectTimeline';
-import PackageCard from '@/components/PackageCard';
-import CustomerRequirements from '@/components/CustomerRequirements';
-import ProjectFeedback from '@/components/ProjectFeedback';
-import HostingStatusCard from '@/components/HostingStatusCard';
-import { ORDERS, PACKAGES } from '@/lib/data';
-import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, Bell, ChevronRight, ExternalLink } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ORDERS } from '@/lib/data';
+import { Package as PackageIcon, RefreshCw, FileText, Bell, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AnimatePresence, motion } from 'framer-motion';
+import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { motion } from 'framer-motion';
 import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -70,259 +66,95 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header userType={viewType} userName={viewType === 'admin' ? 'Admin User' : 'John Doe'} />
-      
-      <main className="flex-grow p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : -20 }}
-            transition={{ duration: 0.5 }}
-            className="glass-card p-6 mb-8"
-          >
-            <div className="flex flex-col md:flex-row md:items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2 text-gradient">
-                  {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
-                </h1>
-                <p className="text-gray-600">
-                  {viewType === 'customer' 
-                    ? 'Track your website build progress and manage your orders' 
-                    : 'Monitor customer orders and project progress'}
-                </p>
-              </div>
-              
-              <div className="mt-4 md:mt-0 flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={showNotification}
-                  className="relative micro-bounce"
-                >
-                  <Bell size={16} className="mr-2" />
-                  Notifications
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-quicksite-blue text-white text-xs rounded-full flex items-center justify-center">
-                    2
-                  </span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={toggleView} 
-                  className="micro-bounce"
-                >
-                  <RefreshCw size={16} className="mr-2" />
-                  Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
-                </Button>
-                
-                <Button
-                  onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
-                  size="sm"
-                  className="bg-quicksite-blue hover:bg-quicksite-dark-blue transition-colors duration-200"
-                >
-                  <FileText size={16} className="mr-2" />
-                  View Order Details
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { icon: <PackageIcon size={20} className="text-quicksite-blue" />, label: "Active Orders", value: viewType === 'customer' ? 1 : 5, bgColor: "bg-quicksite-blue/10" },
-              { icon: <Zap size={20} className="text-quicksite-success" />, label: "Completed Projects", value: viewType === 'customer' ? 1 : 48, bgColor: "bg-quicksite-success/10" },
-              { icon: <Clock size={20} className="text-quicksite-warning" />, label: "Pending Action", value: viewType === 'customer' ? 1 : 3, bgColor: "bg-quicksite-warning/10" },
-              { icon: <MessageSquare size={20} className="text-gray-500" />, label: "New Messages", value: viewType === 'customer' ? 2 : 12, bgColor: "bg-gray-100" }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card p-4 flex items-center hover-lift micro-bounce"
-              >
-                <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mr-3`}>
-                  {stat.icon}
-                </div>
+    <div className="min-h-screen w-full flex group/sidebar-wrapper">
+      <AppSidebar userType={viewType} />
+      <SidebarInset className="overflow-auto">
+        <Header userType={viewType} userName={viewType === 'admin' ? 'Admin User' : 'John Doe'} />
+        
+        <main className="flex-grow p-4 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : -20 }}
+              transition={{ duration: 0.5 }}
+              className="glass-card p-6 mb-8"
+            >
+              <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-600">{stat.label}</p>
-                  <h3 className="text-xl font-semibold">{stat.value}</h3>
+                  <div className="flex items-center">
+                    <SidebarTrigger className="mr-2 sm:hidden" />
+                    <h1 className="text-3xl font-bold text-gradient">
+                      {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
+                    </h1>
+                  </div>
+                  <p className="text-gray-600">
+                    {viewType === 'customer' 
+                      ? 'Track your website build progress and manage your orders' 
+                      : 'Monitor customer orders and project progress'}
+                  </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-          
-          {viewType === 'customer' ? (
-            <>
-              <Tabs defaultValue="overview" className="mb-8">
-                <TabsList className="mb-6 glass-card p-1 bg-white/50">
-                  <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white">Overview</TabsTrigger>
-                  <TabsTrigger value="detailed" className="rounded-lg data-[state=active]:bg-white">Detailed Progress</TabsTrigger>
-                  <TabsTrigger value="hosting" className="rounded-lg data-[state=active]:bg-white">Hosting</TabsTrigger>
-                  <TabsTrigger value="requirements" className="rounded-lg data-[state=active]:bg-white">Requirements</TabsTrigger>
-                  <TabsTrigger value="communication" className="rounded-lg data-[state=active]:bg-white">Communication</TabsTrigger>
-                </TabsList>
                 
-                <TabsContent value="overview" className="space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
+                <div className="mt-4 md:mt-0 flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={showNotification}
+                    className="relative micro-bounce"
                   >
-                    <div className="glass-card p-6 mb-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                        <h2 className="text-2xl font-semibold text-gradient">Current Project</h2>
-                        <div className="mt-2 md:mt-0 flex items-center">
-                          <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="ml-2 text-xs glass-button"
-                            onClick={() => navigate('/orders/' + activeOrder.id)}
-                          >
-                            <ExternalLink size={14} className="mr-1" />
-                            Detailed View
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-1">
-                          <OrderSummary order={activeOrder} />
-                        </div>
-                        <div className="lg:col-span-2">
-                          <ProgressTracker stages={activeOrder.stages} />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    <Bell size={16} className="mr-2" />
+                    Notifications
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-quicksite-blue text-white text-xs rounded-full flex items-center justify-center">
+                      2
+                    </span>
+                  </Button>
                   
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={toggleView} 
+                    className="micro-bounce"
                   >
-                    <div className="glass-card p-6">
-                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Timeline</h2>
-                      <ProjectTimeline order={activeOrder} />
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                  >
-                    <div className="glass-card p-6">
-                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Notifications</h2>
-                      <div className="space-y-3">
-                        {notifications.map((notification) => (
-                          <div 
-                            key={notification.id}
-                            className={`p-3 border rounded-xl ${notification.read ? 'bg-white/40' : 'bg-white/70 border-quicksite-blue/20'} hover:bg-white/80 transition-colors duration-200`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-start">
-                                <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${notification.read ? 'bg-gray-300' : 'bg-quicksite-blue'}`}></div>
-                                <div>
-                                  <p className={`text-sm ${notification.read ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>
-                                    {notification.text}
-                                  </p>
-                                  <span className="text-xs text-gray-500">{notification.date}</span>
-                                </div>
-                              </div>
-                              <Button size="sm" variant="ghost" className="h-7 px-2">
-                                <span className="sr-only">Mark as read</span>
-                                <ChevronRight size={16} />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="detailed">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Detailed Project Progress</h2>
-                    <GamifiedProgressTracker stages={activeOrder.stages} />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="hosting">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <HostingStatusCard 
-                      domainName="yourdomain.com"
-                      isSSLActive={true}
-                      diskUsage={23}
-                      bandwidthUsage={7}
-                      serverLocation="Asia Pacific (Mumbai)"
-                      uptime={99.98}
-                    />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="requirements">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Requirements</h2>
-                    <CustomerRequirements order={activeOrder} userType="customer" />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="communication">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Communication</h2>
-                    <ProjectFeedback order={activeOrder} userType="customer" />
-                  </motion.div>
-                </TabsContent>
-              </Tabs>
-              
+                    <RefreshCw size={16} className="mr-2" />
+                    Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+            
+            {viewType === 'customer' ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="glass-card p-6">
-                  <h2 className="text-2xl font-semibold mb-6 text-gradient">Explore More Packages</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {PACKAGES.slice(0, 3).map((pkg, index) => (
-                      <motion.div
-                        key={pkg.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                        transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                <div className="glass-card p-6 mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <h2 className="text-2xl font-semibold text-gradient">Current Project</h2>
+                    <div className="mt-2 md:mt-0 flex items-center">
+                      <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-2 text-xs glass-button"
+                        onClick={() => navigate('/orders/' + activeOrder.id)}
                       >
-                        <PackageCard package={pkg} />
-                      </motion.div>
-                    ))}
+                        <FileText size={14} className="mr-1" />
+                        Detailed View
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-1">
+                      <OrderSummary order={activeOrder} />
+                    </div>
+                    <div className="lg:col-span-2">
+                      <ProgressTracker stages={activeOrder.stages} />
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            </>
-          ) : (
-            <>
+            ) : (
               <div className="mb-8">
                 <div className="glass-card p-6">
                   <div className="flex justify-between items-center mb-6">
@@ -331,9 +163,10 @@ const Index = () => {
                       onClick={() => navigate('/orders')}
                       className="text-quicksite-blue hover:text-quicksite-dark-blue flex items-center"
                     >
-                      View All Orders <ChevronRight size={16} className="ml-1" />
+                      View All Orders <ExternalLink size={16} className="ml-1" />
                     </button>
                   </div>
+                  {/* Admin orders table */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -385,9 +218,13 @@ const Index = () => {
                                 {new Date(order.orderDate).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                <button className="glass-button px-3 py-1 rounded-lg text-sm">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/orders/${order.id}`)}
+                                >
                                   View Details
-                                </button>
+                                </Button>
                               </td>
                             </motion.tr>
                           ))}
@@ -397,96 +234,25 @@ const Index = () => {
                   </motion.div>
                 </div>
               </div>
-              
-              <Tabs defaultValue="projectProgress" className="mb-8">
-                <TabsList className="mb-6 glass-card p-1 bg-white/50">
-                  <TabsTrigger value="projectProgress" className="rounded-lg data-[state=active]:bg-white">Project Progress</TabsTrigger>
-                  <TabsTrigger value="customerFeedback" className="rounded-lg data-[state=active]:bg-white">Customer Feedback</TabsTrigger>
-                  <TabsTrigger value="packageManagement" className="rounded-lg data-[state=active]:bg-white">Packages</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="projectProgress">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Active Project Progress</h2>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-1">
-                        <OrderSummary order={ORDERS[0]} />
-                      </div>
-                      <div className="lg:col-span-2">
-                        <GamifiedProgressTracker stages={ORDERS[0].stages} />
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <CustomerRequirements order={ORDERS[0]} userType="admin" />
-                    </div>
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="customerFeedback">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Customer Communication</h2>
-                    <ProjectFeedback order={ORDERS[0]} userType="admin" />
-                  </motion.div>
-                </TabsContent>
-                
-                <TabsContent value="packageManagement">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="glass-card p-6"
-                  >
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-semibold text-gradient">Manage Packages</h2>
-                      <button className="bg-quicksite-blue/80 backdrop-blur-md text-white rounded-xl py-2 px-4 hover:bg-quicksite-blue transition-colors duration-200 flex items-center">
-                        <span className="mr-2">+</span> Add Package
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      {PACKAGES.map((pkg, index) => (
-                        <motion.div
-                          key={pkg.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                        >
-                          <PackageCard key={pkg.id} package={pkg} />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </div>
-      </main>
-      
-      <footer className="glass-card p-6 mt-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <span className="text-lg font-bold text-gradient">quicksite</span>
-            <p className="text-sm text-gray-600 mt-1">powered by Clear Business</p>
+            )}
           </div>
-          
-          <div className="flex space-x-6">
-            <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Privacy Policy</a>
-            <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Terms of Service</a>
-            <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Contact Us</a>
+        </main>
+        
+        <footer className="glass-card p-6 mt-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <span className="text-lg font-bold text-gradient">quicksite</span>
+              <p className="text-sm text-gray-600 mt-1">powered by Clear Business</p>
+            </div>
+            
+            <div className="flex space-x-6">
+              <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Privacy Policy</a>
+              <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Terms of Service</a>
+              <a href="#" className="text-sm text-gray-600 hover:text-quicksite-blue transition-colors duration-200">Contact Us</a>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </SidebarInset>
     </div>
   );
 };

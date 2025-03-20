@@ -1,20 +1,21 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, User, ShoppingBag, Settings, LogOut, Package, BarChart, MessageSquare, Users, FileText } from 'lucide-react';
+import { Menu, X, User, ShoppingBag, Settings, LogOut } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   userType?: 'customer' | 'admin';
   userName?: string;
+  sidebarOpen?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
   userType = 'customer',
-  userName = 'John Doe'
+  userName = 'John Doe',
+  sidebarOpen
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
   
   const handleToggleMenu = () => {
     setIsOpen(prev => !prev);
@@ -23,26 +24,9 @@ const Header: React.FC<HeaderProps> = ({
   const closeMenu = () => {
     setIsOpen(false);
   };
-  
-  const navigation = [
-    { name: 'Dashboard', href: '/', current: location.pathname === '/' },
-    { name: 'Orders', href: '/orders', current: location.pathname.startsWith('/orders') },
-    { name: 'Messages', href: '/messages', current: location.pathname.startsWith('/messages') },
-    { name: 'Support', href: '/support', current: location.pathname.startsWith('/support') },
-  ];
-  
-  // Admin-specific navigation items
-  const adminNavigation = [
-    ...navigation,
-    { name: 'Customers', href: '/customers', current: location.pathname.startsWith('/customers') },
-    { name: 'Analytics', href: '/analytics', current: location.pathname.startsWith('/analytics') },
-  ];
-  
-  // Determine which navigation to use based on userType
-  const navItems = userType === 'admin' ? adminNavigation : navigation;
 
   return (
-    <header className="bg-white border-b border-gray-100">
+    <header className="bg-white/70 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -51,23 +35,6 @@ const Header: React.FC<HeaderProps> = ({
                 quicksite
               </Link>
             </div>
-            <nav className="hidden sm:ml-8 sm:flex sm:items-center sm:space-x-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    item.current
-                      ? 'bg-gray-50 text-quicksite-blue'
-                      : 'text-gray-600 hover:text-quicksite-blue hover:bg-gray-50',
-                    'px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150'
-                  )}
-                  aria-current={item.current ? 'page' : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
           </div>
           <div className="flex items-center">
             <div className="hidden sm:block">
@@ -88,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({
                         Profile
                       </Link>
                       <Link to="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
-                        <Package size={16} className="mr-2" />
+                        <ShoppingBag size={16} className="mr-2" />
                         Orders
                       </Link>
                       <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
@@ -122,24 +89,6 @@ const Header: React.FC<HeaderProps> = ({
       
       {/* Mobile menu */}
       <div className={`sm:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <div className="pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={cn(
-                item.current
-                  ? 'bg-gray-50 text-quicksite-blue'
-                  : 'text-gray-600 hover:text-quicksite-blue hover:bg-gray-50',
-                'block px-3 py-2 text-base font-medium transition-colors duration-150'
-              )}
-              aria-current={item.current ? 'page' : undefined}
-              onClick={closeMenu}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
         <div className="pt-4 pb-3 border-t border-gray-200">
           <div className="flex items-center px-4">
             <div className="flex-shrink-0">
