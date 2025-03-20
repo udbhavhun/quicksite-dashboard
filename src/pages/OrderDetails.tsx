@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,12 +6,12 @@ import StatusBadge from '@/components/StatusBadge';
 import OrderForm from '@/components/OrderForm';
 import GamifiedProgressTracker from '@/components/GamifiedProgressTracker';
 import ProjectTimeline from '@/components/ProjectTimeline';
-import HostingStatusCard from '@/components/HostingStatusCard';
+import TechnicalSetupCard from '@/components/TechnicalSetupCard';
 import CustomerRequirements from '@/components/CustomerRequirements';
 import ProjectFeedback from '@/components/ProjectFeedback';
-import PackageCard from '@/components/PackageCard';
+import AddOnManager from '@/components/AddOnManager';
 import { Order, ORDERS, PACKAGES } from '@/lib/data';
-import { ArrowLeft, Edit, Clock, Package as PackageIcon, MessageSquare, Server, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, Clock, Package as PackageIcon, MessageSquare, Server, FileText, PlusCircle } from 'lucide-react';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
@@ -154,7 +153,7 @@ const OrderDetails = () => {
                   
                   <div className="mt-8">
                     <Tabs defaultValue="progress" className="mb-8">
-                      <TabsList className="mb-6 glass-card p-1 bg-white/50">
+                      <TabsList className="mb-6 glass-card p-1 bg-white/50 overflow-x-auto flex whitespace-nowrap">
                         <TabsTrigger value="progress" className="rounded-lg data-[state=active]:bg-white flex items-center">
                           <Clock size={16} className="mr-2" />
                           Detailed Progress
@@ -163,9 +162,9 @@ const OrderDetails = () => {
                           <FileText size={16} className="mr-2" />
                           Project Timeline
                         </TabsTrigger>
-                        <TabsTrigger value="hosting" className="rounded-lg data-[state=active]:bg-white flex items-center">
+                        <TabsTrigger value="technical" className="rounded-lg data-[state=active]:bg-white flex items-center">
                           <Server size={16} className="mr-2" />
-                          Hosting
+                          Technical Setup
                         </TabsTrigger>
                         <TabsTrigger value="requirements" className="rounded-lg data-[state=active]:bg-white flex items-center">
                           <PackageIcon size={16} className="mr-2" />
@@ -174,6 +173,10 @@ const OrderDetails = () => {
                         <TabsTrigger value="communication" className="rounded-lg data-[state=active]:bg-white flex items-center">
                           <MessageSquare size={16} className="mr-2" />
                           Communication
+                        </TabsTrigger>
+                        <TabsTrigger value="addons" className="rounded-lg data-[state=active]:bg-white flex items-center">
+                          <PlusCircle size={16} className="mr-2" />
+                          Add-ons
                         </TabsTrigger>
                       </TabsList>
                       
@@ -199,13 +202,14 @@ const OrderDetails = () => {
                         </motion.div>
                       </TabsContent>
                       
-                      <TabsContent value="hosting">
+                      <TabsContent value="technical">
                         <motion.div
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3 }}
                         >
-                          <HostingStatusCard 
+                          <TechnicalSetupCard 
+                            orderId={order.id}
                             domainName="yourdomain.com"
                             isSSLActive={true}
                             diskUsage={23}
@@ -239,30 +243,20 @@ const OrderDetails = () => {
                           <ProjectFeedback order={order} userType="customer" />
                         </motion.div>
                       </TabsContent>
+                      
+                      <TabsContent value="addons">
+                        <motion.div
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="glass-card p-6"
+                        >
+                          <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Add-ons</h2>
+                          <AddOnManager orderId={order.id} userType="customer" />
+                        </motion.div>
+                      </TabsContent>
                     </Tabs>
                   </div>
-                  
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.5 }}
-                  >
-                    <div className="glass-card p-6 mt-8">
-                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Explore More Packages</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {PACKAGES.slice(0, 3).map((pkg, index) => (
-                          <motion.div
-                            key={pkg.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                          >
-                            <PackageCard package={pkg} />
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
                 </div>
               )}
             </motion.div>
