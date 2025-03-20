@@ -10,20 +10,17 @@ import { ORDERS } from '@/lib/data';
 import { Package as PackageIcon, RefreshCw, FileText, Bell, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/hooks/use-toast";
+import { useUserStore } from '@/stores/userStore';
 
 const Index = () => {
   const navigate = useNavigate();
   const [activeOrder, setActiveOrder] = useState(ORDERS[0]);
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: 'Your domain has been registered successfully!', read: false, date: '2h ago' },
-    { id: 2, text: 'Please review the design mockup and provide feedback', read: false, date: '1d ago' },
-    { id: 3, text: 'Hosting setup is complete. View details', read: true, date: '3d ago' }
-  ]);
-
+  const { userType, userName } = useUserStore();
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -32,17 +29,6 @@ const Index = () => {
     
     return () => clearTimeout(timer);
   }, []);
-
-  const [viewType, setViewType] = useState<'customer' | 'admin'>('customer');
-  
-  const toggleView = () => {
-    setAnimateIn(false);
-    
-    setTimeout(() => {
-      setViewType(viewType === 'customer' ? 'admin' : 'customer');
-      setAnimateIn(true);
-    }, 300);
-  };
 
   const showNotification = () => {
     toast({
@@ -67,9 +53,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen w-full flex group/sidebar-wrapper">
-      <AppSidebar userType={viewType} />
+      <AppSidebar />
       <SidebarInset className="overflow-auto">
-        <Header userType={viewType} userName={viewType === 'admin' ? 'Admin User' : 'John Doe'} />
+        <Header userName={userName} />
         
         <main className="flex-grow p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
@@ -84,11 +70,11 @@ const Index = () => {
                   <div className="flex items-center">
                     <SidebarTrigger className="mr-2 sm:hidden" />
                     <h1 className="text-3xl font-bold text-gradient">
-                      {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
+                      {userType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
                     </h1>
                   </div>
                   <p className="text-gray-600">
-                    {viewType === 'customer' 
+                    {userType === 'customer' 
                       ? 'Track your website build progress and manage your orders' 
                       : 'Monitor customer orders and project progress'}
                   </p>
@@ -107,21 +93,11 @@ const Index = () => {
                       2
                     </span>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={toggleView} 
-                    className="micro-bounce"
-                  >
-                    <RefreshCw size={16} className="mr-2" />
-                    Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
-                  </Button>
                 </div>
               </div>
             </motion.div>
             
-            {viewType === 'customer' ? (
+            {userType === 'customer' ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -149,7 +125,7 @@ const Index = () => {
                       <OrderSummary order={activeOrder} />
                     </div>
                     <div className="lg:col-span-2">
-                      <ProgressTracker stages={activeOrder.stages} />
+                      <ProjectProgressAnimation stages={activeOrder.stages} />
                     </div>
                   </div>
                 </div>
