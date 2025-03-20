@@ -53,7 +53,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ order }) => {
   });
   
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
+    <div className="bg-white/80 backdrop-blur-lg rounded-2xl border border-white/30 shadow-lg p-6">
       <h3 className="text-xl font-semibold mb-6">Project Timeline</h3>
       
       <div className="space-y-10">
@@ -115,7 +115,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ order }) => {
                     {event.stage.updates && event.stage.updates.length > 0 && (
                       <button 
                         onClick={() => toggleUpdate(event.stage.id)}
-                        className="text-xs text-quicksite-blue flex items-center ml-2"
+                        className="text-xs text-quicksite-blue flex items-center ml-2 micro-bounce"
                       >
                         {expandedUpdates[event.stage.id] ? (
                           <>Hide Updates <ChevronUp size={14} className="ml-1" /></>

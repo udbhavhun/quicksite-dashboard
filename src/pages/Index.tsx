@@ -4,22 +4,30 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import StatusBadge from '@/components/StatusBadge';
 import ProgressTracker from '@/components/ProgressTracker';
-import DetailedProgressTracker from '@/components/DetailedProgressTracker';
+import GamifiedProgressTracker from '@/components/GamifiedProgressTracker';
 import OrderSummary from '@/components/OrderSummary';
 import ProjectTimeline from '@/components/ProjectTimeline';
 import PackageCard from '@/components/PackageCard';
 import CustomerRequirements from '@/components/CustomerRequirements';
 import ProjectFeedback from '@/components/ProjectFeedback';
+import HostingStatusCard from '@/components/HostingStatusCard';
 import { ORDERS, PACKAGES } from '@/lib/data';
-import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Clock, Package as PackageIcon, RefreshCw, Zap, Layers, Users, FileText, MessageSquare, Bell, ChevronRight, ExternalLink } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
   const [activeOrder, setActiveOrder] = useState(ORDERS[0]);
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'Your domain has been registered successfully!', read: false, date: '2h ago' },
+    { id: 2, text: 'Please review the design mockup and provide feedback', read: false, date: '1d ago' },
+    { id: 3, text: 'Hosting setup is complete. View details', read: true, date: '3d ago' }
+  ]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -39,6 +47,13 @@ const Index = () => {
       setViewType(viewType === 'customer' ? 'admin' : 'customer');
       setAnimateIn(true);
     }, 300);
+  };
+
+  const showNotification = () => {
+    toast({
+      title: "New update available",
+      description: "The design mockups are ready for your review.",
+    });
   };
 
   if (loading) {
@@ -80,21 +95,37 @@ const Index = () => {
               </div>
               
               <div className="mt-4 md:mt-0 flex items-center space-x-2">
-                <button 
-                  onClick={toggleView}
-                  className="glass-button rounded-xl py-2 px-4 text-sm font-medium text-gray-700"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={showNotification}
+                  className="relative micro-bounce"
                 >
-                  <RefreshCw size={16} className="mr-2 inline" />
-                  Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
-                </button>
+                  <Bell size={16} className="mr-2" />
+                  Notifications
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-quicksite-blue text-white text-xs rounded-full flex items-center justify-center">
+                    2
+                  </span>
+                </Button>
                 
-                <button
-                  onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
-                  className="bg-quicksite-blue/80 backdrop-blur-md text-white rounded-xl py-2 px-4 shadow-sm text-sm font-medium hover:bg-quicksite-blue transition-colors duration-200"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={toggleView} 
+                  className="micro-bounce"
                 >
-                  <FileText size={16} className="mr-2 inline" />
+                  <RefreshCw size={16} className="mr-2" />
+                  Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
+                </Button>
+                
+                <Button
+                  onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
+                  size="sm"
+                  className="bg-quicksite-blue hover:bg-quicksite-dark-blue transition-colors duration-200"
+                >
+                  <FileText size={16} className="mr-2" />
                   View Order Details
-                </button>
+                </Button>
               </div>
             </div>
           </motion.div>
@@ -111,7 +142,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card p-4 flex items-center hover-lift"
+                className="glass-card p-4 flex items-center hover-lift micro-bounce"
               >
                 <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mr-3`}>
                   {stat.icon}
@@ -130,6 +161,7 @@ const Index = () => {
                 <TabsList className="mb-6 glass-card p-1 bg-white/50">
                   <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white">Overview</TabsTrigger>
                   <TabsTrigger value="detailed" className="rounded-lg data-[state=active]:bg-white">Detailed Progress</TabsTrigger>
+                  <TabsTrigger value="hosting" className="rounded-lg data-[state=active]:bg-white">Hosting</TabsTrigger>
                   <TabsTrigger value="requirements" className="rounded-lg data-[state=active]:bg-white">Requirements</TabsTrigger>
                   <TabsTrigger value="communication" className="rounded-lg data-[state=active]:bg-white">Communication</TabsTrigger>
                 </TabsList>
@@ -143,8 +175,17 @@ const Index = () => {
                     <div className="glass-card p-6 mb-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                         <h2 className="text-2xl font-semibold text-gradient">Current Project</h2>
-                        <div className="mt-2 md:mt-0">
+                        <div className="mt-2 md:mt-0 flex items-center">
                           <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="ml-2 text-xs glass-button"
+                            onClick={() => navigate('/orders/' + activeOrder.id)}
+                          >
+                            <ExternalLink size={14} className="mr-1" />
+                            Detailed View
+                          </Button>
                         </div>
                       </div>
                       
@@ -176,17 +217,29 @@ const Index = () => {
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
                     <div className="glass-card p-6">
-                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Explore More Packages</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {PACKAGES.slice(0, 3).map((pkg, index) => (
-                          <motion.div
-                            key={pkg.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                            transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Notifications</h2>
+                      <div className="space-y-3">
+                        {notifications.map((notification) => (
+                          <div 
+                            key={notification.id}
+                            className={`p-3 border rounded-xl ${notification.read ? 'bg-white/40' : 'bg-white/70 border-quicksite-blue/20'} hover:bg-white/80 transition-colors duration-200`}
                           >
-                            <PackageCard package={pkg} />
-                          </motion.div>
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start">
+                                <div className={`w-2 h-2 rounded-full mt-2 mr-3 ${notification.read ? 'bg-gray-300' : 'bg-quicksite-blue'}`}></div>
+                                <div>
+                                  <p className={`text-sm ${notification.read ? 'text-gray-600' : 'text-gray-800 font-medium'}`}>
+                                    {notification.text}
+                                  </p>
+                                  <span className="text-xs text-gray-500">{notification.date}</span>
+                                </div>
+                              </div>
+                              <Button size="sm" variant="ghost" className="h-7 px-2">
+                                <span className="sr-only">Mark as read</span>
+                                <ChevronRight size={16} />
+                              </Button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -201,7 +254,24 @@ const Index = () => {
                     className="glass-card p-6"
                   >
                     <h2 className="text-2xl font-semibold mb-6 text-gradient">Detailed Project Progress</h2>
-                    <DetailedProgressTracker stages={activeOrder.stages} />
+                    <GamifiedProgressTracker stages={activeOrder.stages} />
+                  </motion.div>
+                </TabsContent>
+                
+                <TabsContent value="hosting">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <HostingStatusCard 
+                      domainName="yourdomain.com"
+                      isSSLActive={true}
+                      diskUsage={23}
+                      bandwidthUsage={7}
+                      serverLocation="Asia Pacific (Mumbai)"
+                      uptime={99.98}
+                    />
                   </motion.div>
                 </TabsContent>
                 
@@ -229,6 +299,28 @@ const Index = () => {
                   </motion.div>
                 </TabsContent>
               </Tabs>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+              >
+                <div className="glass-card p-6">
+                  <h2 className="text-2xl font-semibold mb-6 text-gradient">Explore More Packages</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {PACKAGES.slice(0, 3).map((pkg, index) => (
+                      <motion.div
+                        key={pkg.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                        transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                      >
+                        <PackageCard package={pkg} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
             </>
           ) : (
             <>
