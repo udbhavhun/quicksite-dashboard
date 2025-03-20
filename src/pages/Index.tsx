@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -419,7 +418,7 @@ const Index = () => {
                         <OrderSummary order={ORDERS[0]} />
                       </div>
                       <div className="lg:col-span-2">
-                        <DetailedProgressTracker stages={ORDERS[0].stages} />
+                        <GamifiedProgressTracker stages={ORDERS[0].stages} />
                       </div>
                     </div>
                     

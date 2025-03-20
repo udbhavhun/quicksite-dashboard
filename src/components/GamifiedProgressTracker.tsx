@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { ProjectStage } from '@/lib/data';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Clock, Trophy, Zap, Server, Globe, Palette, Code, Flask } from 'lucide-react';
+import { CheckCircle2, Clock, Trophy, Zap, Server, Globe, Palette, Code, Beaker } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +23,7 @@ const GamifiedProgressTracker: React.FC<GamifiedProgressTrackerProps> = ({ stage
     'hosting': <Server className="h-5 w-5" />,
     'design': <Palette className="h-5 w-5" />,
     'development': <Code className="h-5 w-5" />,
-    'testing': <Flask className="h-5 w-5" />
+    'testing': <Beaker className="h-5 w-5" />
   };
   
   // Get icon or default
