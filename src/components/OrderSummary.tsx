@@ -15,8 +15,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
-      <h3 className="text-xl font-semibold mb-6">Order Summary</h3>
+    <div className="glass-card p-6 hover-lift">
+      <h3 className="text-xl font-semibold mb-6 text-gradient">Order Summary</h3>
       
       <div className="mb-6 flex items-center">
         <div className="w-16 h-16 rounded-xl bg-quicksite-blue/10 flex items-center justify-center mr-4">
@@ -36,7 +36,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
           <span className="font-medium">{order.id}</span>
         </div>
         
-        <div className="flex justify-between items-center py-2 border-t border-gray-100">
+        <div className="flex justify-between items-center py-2 border-t border-white/10">
           <div className="flex items-center text-gray-600">
             <Calendar size={16} className="mr-2" />
             <span>Order Date</span>
@@ -44,7 +44,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
           <span>{formatDate(order.orderDate)}</span>
         </div>
         
-        <div className="flex justify-between items-center py-2 border-t border-gray-100">
+        <div className="flex justify-between items-center py-2 border-t border-white/10">
           <div className="flex items-center text-gray-600">
             <Calendar size={16} className="mr-2" />
             <span>Estimated Delivery</span>
@@ -52,7 +52,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
           <span>{formatDate(order.estimatedDelivery)}</span>
         </div>
         
-        <div className="flex justify-between items-center py-2 border-t border-gray-100">
+        <div className="flex justify-between items-center py-2 border-t border-white/10">
           <div className="flex items-center text-gray-600">
             <CreditCard size={16} className="mr-2" />
             <span>Payment Status</span>
@@ -68,7 +68,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
         </div>
       </div>
       
-      <div className="bg-gray-50 -mx-6 px-6 py-4 mt-6 border-t border-gray-100">
+      <div className="bg-white/20 backdrop-blur-sm -mx-6 px-6 py-4 mt-6 border-t border-white/10 rounded-b-2xl">
         <div className="flex justify-between items-center">
           <span className="font-medium">Total Amount</span>
           <span className="text-lg font-semibold">₹{order.totalAmount.toLocaleString()}</span>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -45,7 +46,7 @@ const Index = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-grow flex items-center justify-center">
-          <div className="flex flex-col items-center">
+          <div className="glass-card p-8 flex flex-col items-center">
             <div className="w-12 h-12 rounded-full border-4 border-quicksite-blue border-t-transparent animate-spin mb-4"></div>
             <span className="text-gray-600">Loading dashboard...</span>
           </div>
@@ -55,7 +56,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <Header userType={viewType} userName={viewType === 'admin' ? 'Admin User' : 'John Doe'} />
       
       <main className="flex-grow p-4 md:p-6">
@@ -64,35 +65,37 @@ const Index = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : -20 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col md:flex-row md:items-center justify-between mb-8"
+            className="glass-card p-6 mb-8"
           >
-            <div>
-              <h1 className="text-3xl font-bold mb-2">
-                {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
-              </h1>
-              <p className="text-gray-600">
-                {viewType === 'customer' 
-                  ? 'Track your website build progress and manage your orders' 
-                  : 'Monitor customer orders and project progress'}
-              </p>
-            </div>
-            
-            <div className="mt-4 md:mt-0 flex items-center space-x-2">
-              <button 
-                onClick={toggleView}
-                className="flex items-center justify-center py-2 px-4 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors duration-200"
-              >
-                <RefreshCw size={16} className="mr-2" />
-                Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
-              </button>
+            <div className="flex flex-col md:flex-row md:items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold mb-2 text-gradient">
+                  {viewType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
+                </h1>
+                <p className="text-gray-600">
+                  {viewType === 'customer' 
+                    ? 'Track your website build progress and manage your orders' 
+                    : 'Monitor customer orders and project progress'}
+                </p>
+              </div>
               
-              <button
-                onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
-                className="flex items-center justify-center py-2 px-4 bg-quicksite-blue text-white rounded-lg shadow-sm text-sm font-medium hover:bg-quicksite-dark-blue transition-colors duration-200"
-              >
-                <FileText size={16} className="mr-2" />
-                View Order Details
-              </button>
+              <div className="mt-4 md:mt-0 flex items-center space-x-2">
+                <button 
+                  onClick={toggleView}
+                  className="glass-button rounded-xl py-2 px-4 text-sm font-medium text-gray-700"
+                >
+                  <RefreshCw size={16} className="mr-2 inline" />
+                  Switch to {viewType === 'customer' ? 'Admin' : 'Customer'} View
+                </button>
+                
+                <button
+                  onClick={() => ORDERS.length > 0 && navigate(`/orders/${ORDERS[0].id}`)}
+                  className="bg-quicksite-blue/80 backdrop-blur-md text-white rounded-xl py-2 px-4 shadow-sm text-sm font-medium hover:bg-quicksite-blue transition-colors duration-200"
+                >
+                  <FileText size={16} className="mr-2 inline" />
+                  View Order Details
+                </button>
+              </div>
             </div>
           </motion.div>
           
@@ -108,7 +111,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-card p-4 flex items-center transition-transform duration-300 hover:translate-y-[-5px]"
+                className="glass-card p-4 flex items-center hover-lift"
               >
                 <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center mr-3`}>
                   {stat.icon}
@@ -124,11 +127,11 @@ const Index = () => {
           {viewType === 'customer' ? (
             <>
               <Tabs defaultValue="overview" className="mb-8">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>
-                  <TabsTrigger value="requirements">Requirements</TabsTrigger>
-                  <TabsTrigger value="communication">Communication</TabsTrigger>
+                <TabsList className="mb-6 glass-card p-1 bg-white/50">
+                  <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white">Overview</TabsTrigger>
+                  <TabsTrigger value="detailed" className="rounded-lg data-[state=active]:bg-white">Detailed Progress</TabsTrigger>
+                  <TabsTrigger value="requirements" className="rounded-lg data-[state=active]:bg-white">Requirements</TabsTrigger>
+                  <TabsTrigger value="communication" className="rounded-lg data-[state=active]:bg-white">Communication</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="overview" className="space-y-6">
@@ -137,19 +140,21 @@ const Index = () => {
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                   >
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                      <h2 className="text-2xl font-semibold">Current Project</h2>
-                      <div className="mt-2 md:mt-0">
-                        <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                    <div className="glass-card p-6 mb-6">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                        <h2 className="text-2xl font-semibold text-gradient">Current Project</h2>
+                        <div className="mt-2 md:mt-0">
+                          <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-1">
-                        <OrderSummary order={activeOrder} />
-                      </div>
-                      <div className="lg:col-span-2">
-                        <ProgressTracker stages={activeOrder.stages} />
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-1">
+                          <OrderSummary order={activeOrder} />
+                        </div>
+                        <div className="lg:col-span-2">
+                          <ProgressTracker stages={activeOrder.stages} />
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -159,8 +164,10 @@ const Index = () => {
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Project Timeline</h2>
-                    <ProjectTimeline order={activeOrder} />
+                    <div className="glass-card p-6">
+                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Timeline</h2>
+                      <ProjectTimeline order={activeOrder} />
+                    </div>
                   </motion.div>
                   
                   <motion.div
@@ -168,18 +175,20 @@ const Index = () => {
                     animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Explore More Packages</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                      {PACKAGES.slice(0, 3).map((pkg, index) => (
-                        <motion.div
-                          key={pkg.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                          transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-                        >
-                          <PackageCard package={pkg} />
-                        </motion.div>
-                      ))}
+                    <div className="glass-card p-6">
+                      <h2 className="text-2xl font-semibold mb-6 text-gradient">Explore More Packages</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {PACKAGES.slice(0, 3).map((pkg, index) => (
+                          <motion.div
+                            key={pkg.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                            transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
+                          >
+                            <PackageCard package={pkg} />
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
                 </TabsContent>
@@ -189,8 +198,9 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Detailed Project Progress</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Detailed Project Progress</h2>
                     <DetailedProgressTracker stages={activeOrder.stages} />
                   </motion.div>
                 </TabsContent>
@@ -200,8 +210,9 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Project Requirements</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Requirements</h2>
                     <CustomerRequirements order={activeOrder} userType="customer" />
                   </motion.div>
                 </TabsContent>
@@ -211,8 +222,9 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Project Communication</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Communication</h2>
                     <ProjectFeedback order={activeOrder} userType="customer" />
                   </motion.div>
                 </TabsContent>
@@ -221,83 +233,85 @@ const Index = () => {
           ) : (
             <>
               <div className="mb-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-semibold">Recent Orders</h2>
-                  <button
-                    onClick={() => navigate('/orders')}
-                    className="text-quicksite-blue hover:text-quicksite-dark-blue flex items-center"
-                  >
-                    View All Orders <ChevronRight size={16} className="ml-1" />
-                  </button>
-                </div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden"
-                >
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {ORDERS.map((order, index) => (
-                          <motion.tr 
-                            key={order.id} 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 10 }}
-                            transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
-                            className="hover:bg-gray-50 transition-colors duration-150"
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              {order.id}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              {order.customer.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              {order.package.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <StatusBadge status={
-                                order.stages.every(s => s.status === 'completed') ? 'completed' :
-                                order.stages.some(s => s.status === 'in-progress') ? 'in-progress' :
-                                'pending'
-                              } size="sm" />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              ₹{order.totalAmount.toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                              {new Date(order.orderDate).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                              <button className="text-quicksite-blue hover:text-quicksite-dark-blue transition-colors duration-150">
-                                View Details
-                              </button>
-                            </td>
-                          </motion.tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div className="glass-card p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-semibold text-gradient">Recent Orders</h2>
+                    <button
+                      onClick={() => navigate('/orders')}
+                      className="text-quicksite-blue hover:text-quicksite-dark-blue flex items-center"
+                    >
+                      View All Orders <ChevronRight size={16} className="ml-1" />
+                    </button>
                   </div>
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="bg-white/80 backdrop-blur-md rounded-xl border border-white/20 shadow-sm overflow-hidden"
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-gray-50/80 border-b border-gray-100">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {ORDERS.map((order, index) => (
+                            <motion.tr 
+                              key={order.id} 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 10 }}
+                              transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
+                              className="hover:bg-white/20 transition-colors duration-150"
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {order.id}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {order.customer.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                {order.package.name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <StatusBadge status={
+                                  order.stages.every(s => s.status === 'completed') ? 'completed' :
+                                  order.stages.some(s => s.status === 'in-progress') ? 'in-progress' :
+                                  'pending'
+                                } size="sm" />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                ₹{order.totalAmount.toLocaleString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {new Date(order.orderDate).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button className="glass-button px-3 py-1 rounded-lg text-sm">
+                                  View Details
+                                </button>
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
               
               <Tabs defaultValue="projectProgress" className="mb-8">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="projectProgress">Project Progress</TabsTrigger>
-                  <TabsTrigger value="customerFeedback">Customer Feedback</TabsTrigger>
-                  <TabsTrigger value="packageManagement">Packages</TabsTrigger>
+                <TabsList className="mb-6 glass-card p-1 bg-white/50">
+                  <TabsTrigger value="projectProgress" className="rounded-lg data-[state=active]:bg-white">Project Progress</TabsTrigger>
+                  <TabsTrigger value="customerFeedback" className="rounded-lg data-[state=active]:bg-white">Customer Feedback</TabsTrigger>
+                  <TabsTrigger value="packageManagement" className="rounded-lg data-[state=active]:bg-white">Packages</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="projectProgress">
@@ -305,8 +319,9 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Active Project Progress</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Active Project Progress</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div className="lg:col-span-1">
                         <OrderSummary order={ORDERS[0]} />
@@ -327,8 +342,9 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
-                    <h2 className="text-2xl font-semibold mb-6">Customer Communication</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-gradient">Customer Communication</h2>
                     <ProjectFeedback order={ORDERS[0]} userType="admin" />
                   </motion.div>
                 </TabsContent>
@@ -338,10 +354,11 @@ const Index = () => {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="glass-card p-6"
                   >
                     <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-semibold">Manage Packages</h2>
-                      <button className="py-2 px-4 bg-quicksite-blue text-white rounded-lg hover:bg-quicksite-dark-blue transition-colors duration-200 flex items-center">
+                      <h2 className="text-2xl font-semibold text-gradient">Manage Packages</h2>
+                      <button className="bg-quicksite-blue/80 backdrop-blur-md text-white rounded-xl py-2 px-4 hover:bg-quicksite-blue transition-colors duration-200 flex items-center">
                         <span className="mr-2">+</span> Add Package
                       </button>
                     </div>
@@ -365,10 +382,10 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="bg-white border-t border-gray-100 py-6 px-6">
+      <footer className="glass-card p-6 mt-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <span className="text-lg font-bold text-quicksite-blue">quicksite</span>
+            <span className="text-lg font-bold text-gradient">quicksite</span>
             <p className="text-sm text-gray-600 mt-1">powered by Clear Business</p>
           </div>
           

@@ -16,7 +16,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
 }) => {
   return (
     <div 
-      className={`relative overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-card group transition-all duration-300 hover:shadow-elevated hover:border-quicksite-blue/20 ${className}`}
+      className={`relative overflow-hidden glass-card group transition-all duration-300 hover-lift ${className}`}
       onClick={onClick}
     >
       <div className="p-6">
@@ -33,7 +33,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
           ))}
         </ul>
         
-        <button className="w-full py-2.5 px-4 bg-quicksite-blue/10 hover:bg-quicksite-blue text-quicksite-blue hover:text-white rounded-lg flex items-center justify-center transition-all duration-200 group-hover:bg-quicksite-blue group-hover:text-white">
+        <button className="w-full py-2.5 px-4 glass-button bg-quicksite-blue/10 text-quicksite-blue hover:bg-quicksite-blue hover:text-white rounded-xl flex items-center justify-center transition-all duration-200">
           <span>Order Now</span>
           <ArrowRight size={16} className="ml-2 transition-transform duration-200 group-hover:translate-x-1" />
         </button>
