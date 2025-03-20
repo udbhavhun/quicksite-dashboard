@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useUserStore } from '@/stores/userStore';
-import { LightBulb, Plus, ThumbsUp, MessageSquare, Filter, Search, ChevronUp, ChevronDown, Tag, Check, X, Calendar, User, Users } from 'lucide-react';
+import { Lightbulb, Plus, ThumbsUp, MessageSquare, Filter, Search, ChevronUp, ChevronDown, Tag, Check, X, Calendar, User, Users } from 'lucide-react';
 import Header from '@/components/Header';
 import AppSidebar from '@/components/AppSidebar';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -473,7 +473,7 @@ const FeatureRequests = () => {
                   >
                     <div className="text-center">
                       <div className={`p-2 rounded-full inline-flex mx-auto mb-2 ${getFeatureStatusColor(status as FeatureStatus)}`}>
-                        <LightBulb size={20} />
+                        <Lightbulb size={20} />
                       </div>
                       <h3 className="text-lg font-bold">{count}</h3>
                       <p className="text-xs text-gray-600 capitalize">{status.replace('-', ' ')}</p>
@@ -752,7 +752,7 @@ const FeatureRequests = () => {
                   ))
                 ) : (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
-                    <LightBulb size={48} className="mx-auto text-gray-400 mb-2" />
+                    <Lightbulb size={48} className="mx-auto text-gray-400 mb-2" />
                     <p className="text-gray-600">No feature requests found matching your criteria.</p>
                     <Button className="mt-4" onClick={() => setIsAddingFeature(true)}>
                       <Plus size={16} className="mr-2" />

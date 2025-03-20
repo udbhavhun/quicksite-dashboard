@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,6 +12,7 @@ import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/hooks/use-toast";
 import { useUserStore } from '@/stores/userStore';
+import ProjectProgressAnimation from '@/components/ProjectProgressAnimation';
 
 const Index = () => {
   const navigate = useNavigate();
