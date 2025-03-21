@@ -17,6 +17,7 @@ import SitePerformance from "./pages/SitePerformance";
 import SiteBugs from "./pages/SiteBugs";
 import FeatureRequests from "./pages/FeatureRequests";
 import Messages from "./pages/Messages";
+import DataManagement from "./pages/DataManagement";
 import { useUserStore } from "./stores/userStore";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Admin-only route component
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, userType } = useUserStore();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (userType !== 'admin') {
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
@@ -52,6 +68,7 @@ const App = () => (
             <Route path="/site-bugs" element={<ProtectedRoute><SiteBugs /></ProtectedRoute>} />
             <Route path="/feature-requests" element={<ProtectedRoute><FeatureRequests /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/data-management" element={<AdminRoute><DataManagement /></AdminRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

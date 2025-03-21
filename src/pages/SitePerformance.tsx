@@ -51,7 +51,8 @@ import {
   Tablet,
   PieChart as PieChartIcon,
   BarChart as BarChartIcon,
-  LineChart as LineChartIcon
+  LineChart as LineChartIcon,
+  ArrowLeft
 } from 'lucide-react';
 import { ORDERS } from '@/lib/data';
 

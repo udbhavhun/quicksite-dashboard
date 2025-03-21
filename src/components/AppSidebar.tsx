@@ -18,8 +18,6 @@ import {
   ShoppingBag, 
   MessageSquare, 
   HelpCircle, 
-  Users, 
-  BarChart, 
   Settings, 
   User, 
   LogOut,
@@ -27,7 +25,8 @@ import {
   ListTodo,
   Activity,
   Zap,
-  FileText
+  FileText,
+  Database
 } from 'lucide-react';
 import { useUserStore } from '@/stores/userStore';
 import { useNavigate } from 'react-router-dom';
@@ -50,9 +49,8 @@ const AppSidebar = () => {
   const adminNavItems = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard, current: location.pathname === '/' },
     { name: 'Orders', href: '/orders', icon: ShoppingBag, current: location.pathname.startsWith('/orders') },
-    { name: 'Customers', href: '/customers', icon: Users, current: location.pathname.startsWith('/customers') },
     { name: 'Messages', href: '/messages', icon: MessageSquare, current: location.pathname.startsWith('/messages') },
-    { name: 'Analytics', href: '/analytics', icon: BarChart, current: location.pathname.startsWith('/analytics') },
+    { name: 'Data Management', href: '/data-management', icon: Database, current: location.pathname.startsWith('/data-management') },
     { name: 'Site Bugs', href: '/site-bugs', icon: AlertTriangle, current: location.pathname.startsWith('/site-bugs') },
     { name: 'Site Performance', href: '/site-performance', icon: Activity, current: location.pathname.startsWith('/site-performance') },
     { name: 'Feature Management', href: '/feature-requests', icon: ListTodo, current: location.pathname.startsWith('/feature-requests') },

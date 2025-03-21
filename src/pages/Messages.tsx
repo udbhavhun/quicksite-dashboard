@@ -21,7 +21,6 @@ import {
   Plus
 } from 'lucide-react';
 
-// Mock message data structure
 interface MessageAttachment {
   id: string;
   filename: string;
@@ -59,7 +58,6 @@ interface MessageThread {
   messages: Message[];
 }
 
-// Mock data - in a real app, this would come from an API
 const MOCK_MESSAGE_THREADS: MessageThread[] = [
   {
     id: 'thread-1',
@@ -225,14 +223,12 @@ const Messages = () => {
     recipientId: ''
   });
 
-  // Filter threads based on search query
   const filteredThreads = messageThreads.filter(thread => 
     thread.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
     thread.participants.some(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
     thread.messages.some(m => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Mark messages as read when thread is selected
   useEffect(() => {
     if (selectedThread) {
       const updatedThreads = messageThreads.map(thread => {
@@ -286,7 +282,6 @@ const Messages = () => {
 
     setMessageThreads(updatedThreads);
     
-    // Update the selected thread
     const updatedSelectedThread = updatedThreads.find(t => t.id === selectedThread.id);
     if (updatedSelectedThread) {
       setSelectedThread(updatedSelectedThread);
@@ -326,7 +321,7 @@ const Messages = () => {
     const recipient = {
       id: userType === 'admin' ? 'user-1' : 'admin-1',
       name: userType === 'admin' ? 'John Doe' : 'Support Team',
-      role: userType === 'admin' ? 'customer' : 'admin'
+      role: userType === 'admin' ? 'customer' as const : 'admin' as const
     };
 
     const newThread: MessageThread = {
@@ -336,7 +331,7 @@ const Messages = () => {
         {
           id: userType === 'admin' ? 'admin-1' : 'user-1',
           name: senderName,
-          role: currentUser
+          role: currentUser as 'admin' | 'customer'
         },
         recipient
       ],
@@ -388,7 +383,6 @@ const Messages = () => {
         
         <main className="flex-grow flex flex-col h-[calc(100vh-64px)]">
           <div className="flex h-full">
-            {/* Message list sidebar */}
             <div className={`border-r border-gray-200 ${selectedThread ? 'hidden md:block' : 'block'} w-full md:w-80 lg:w-96`}>
               <div className="p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-4">
@@ -485,7 +479,6 @@ const Messages = () => {
               </div>
             </div>
             
-            {/* Message detail view */}
             {selectedThread ? (
               <div className="flex-1 flex flex-col h-full">
                 <div className="border-b border-gray-200 p-4">
@@ -718,3 +711,4 @@ const Messages = () => {
 };
 
 export default Messages;
+
