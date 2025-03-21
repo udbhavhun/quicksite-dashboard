@@ -51,6 +51,7 @@ const AppSidebar = () => {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard, current: location.pathname === '/' },
     { name: 'Orders', href: '/orders', icon: ShoppingBag, current: location.pathname.startsWith('/orders') },
     { name: 'Customers', href: '/customers', icon: Users, current: location.pathname.startsWith('/customers') },
+    { name: 'Messages', href: '/messages', icon: MessageSquare, current: location.pathname.startsWith('/messages') },
     { name: 'Analytics', href: '/analytics', icon: BarChart, current: location.pathname.startsWith('/analytics') },
     { name: 'Site Bugs', href: '/site-bugs', icon: AlertTriangle, current: location.pathname.startsWith('/site-bugs') },
     { name: 'Site Performance', href: '/site-performance', icon: Activity, current: location.pathname.startsWith('/site-performance') },

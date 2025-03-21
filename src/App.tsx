@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import SitePerformance from "./pages/SitePerformance";
 import SiteBugs from "./pages/SiteBugs";
 import FeatureRequests from "./pages/FeatureRequests";
+import Messages from "./pages/Messages";
 import { useUserStore } from "./stores/userStore";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/site-performance" element={<ProtectedRoute><SitePerformance /></ProtectedRoute>} />
             <Route path="/site-bugs" element={<ProtectedRoute><SiteBugs /></ProtectedRoute>} />
             <Route path="/feature-requests" element={<ProtectedRoute><FeatureRequests /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
