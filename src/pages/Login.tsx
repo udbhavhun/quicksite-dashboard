@@ -1,85 +1,42 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/stores/userStore';
 import { toast } from '@/hooks/use-toast';
-import { User, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Users, Lock, ArrowRight, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
-  // Login state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  
-  // Signup state
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
-  const [signupName, setSignupName] = useState('');
-  const [isSignupLoading, setIsSignupLoading] = useState(false);
-  
   const navigate = useNavigate();
-  const { isAuthenticated, updateProfile } = useUserStore();
+  const { login } = useUserStore();
   
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
-  
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setAuthError(null);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const success = await login(email, password);
       
-      if (error) {
-        setAuthError(error.message);
+      if (success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        navigate('/');
+      } else {
         toast({
           title: "Login failed",
-          description: error.message,
+          description: "Invalid email or password. Please try again.",
           variant: "destructive"
         });
-      } else if (data.user) {
-        // Fetch user profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (profileData) {
-          updateProfile({
-            id: data.user.id,
-            email: data.user.email || '',
-            name: profileData.name || '',
-            role: profileData.role as 'customer' | 'admin',
-            avatar: profileData.avatar_url
-          });
-          
-          toast({
-            title: "Login successful",
-            description: "Welcome back!",
-          });
-          
-          navigate('/');
-        }
       }
     } catch (error) {
-      console.error("Login error:", error);
       toast({
         title: "Login error",
         description: "An unexpected error occurred. Please try again.",
@@ -90,63 +47,24 @@ const Login = () => {
     }
   };
   
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSignupLoading(true);
-    setAuthError(null);
-    
-    // Validate password match
-    if (signupPassword !== signupConfirmPassword) {
-      setAuthError("Passwords do not match");
-      toast({
-        title: "Signup failed",
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      setIsSignupLoading(false);
-      return;
+  // Demo credentials
+  const demoCredentials = [
+    {
+      type: 'Customer',
+      email: 'customer@example.com',
+      password: 'password123'
+    },
+    {
+      type: 'Admin',
+      email: 'admin@example.com',
+      password: 'admin123'
     }
-    
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-        options: {
-          data: {
-            name: signupName,
-          }
-        }
-      });
-      
-      if (error) {
-        setAuthError(error.message);
-        toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else if (data.user) {
-        toast({
-          title: "Signup successful",
-          description: "Your account has been created successfully. You can now log in.",
-        });
-        
-        // Clear signup form
-        setSignupEmail('');
-        setSignupPassword('');
-        setSignupConfirmPassword('');
-        setSignupName('');
-      }
-    } catch (error) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Signup error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSignupLoading(false);
-    }
+  ];
+  
+  const fillDemoCredentials = (type: 'Customer' | 'Admin') => {
+    const credentials = type === 'Customer' ? demoCredentials[0] : demoCredentials[1];
+    setEmail(credentials.email);
+    setPassword(credentials.password);
   };
   
   return (
@@ -163,154 +81,110 @@ const Login = () => {
         </div>
         
         <div className="glass-card p-8 shadow-xl">
-          {authError && (
-            <Alert className="mb-6 bg-red-50 border-red-200">
-              <AlertCircle className="h-4 w-4 text-red-500" />
-              <AlertDescription className="text-red-700 text-sm">
-                {authError}
-              </AlertDescription>
-            </Alert>
-          )}
+          <Alert className="mb-6 bg-blue-50 border-blue-100">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-blue-700 text-sm">
+              <strong>Demo Credentials:</strong><br />
+              Customer: customer@example.com / password123<br />
+              Admin: admin@example.com / admin123
+            </AlertDescription>
+          </Alert>
           
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User size={16} className="text-gray-400" />
+                </div>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
             
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User size={16} className="text-gray-400" />
-                    </div>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock size={16} className="text-gray-400" />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock size={16} className="text-gray-400" />
-                    </div>
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-quicksite-blue focus:ring-quicksite-blue border-gray-300 rounded"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                      Remember me
-                    </label>
-                  </div>
-                  <div className="text-sm">
-                    <a href="#" className="text-quicksite-blue hover:text-quicksite-dark-blue">
-                      Forgot password?
-                    </a>
-                  </div>
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full bg-quicksite-blue hover:bg-quicksite-dark-blue text-white flex items-center justify-center micro-bounce"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <User size={16} className="mr-2" />
-                  )}
-                  Sign in
-                </Button>
-              </form>
-            </TabsContent>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
             
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <Input
-                    type="text"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <Input
-                    type="email"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <Input
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                  <Input
-                    type="password"
-                    value={signupConfirmPassword}
-                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full bg-quicksite-blue hover:bg-quicksite-dark-blue text-white flex items-center justify-center micro-bounce"
-                  disabled={isSignupLoading}
-                >
-                  {isSignupLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <ArrowRight size={16} className="mr-2" />
-                  )}
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-quicksite-blue focus:ring-quicksite-blue border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  Remember me
+                </label>
+              </div>
+              <div className="text-sm">
+                <a href="#" className="text-quicksite-blue hover:text-quicksite-dark-blue">
+                  Forgot password?
+                </a>
+              </div>
+            </div>
+            
+            <Button
+              type="submit"
+              className="w-full bg-quicksite-blue hover:bg-quicksite-dark-blue text-white flex items-center justify-center micro-bounce"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              ) : (
+                <User size={16} className="mr-2" />
+              )}
+              Sign in
+            </Button>
+          </form>
+          
+          <div className="mt-4 flex gap-2">
+            <Button 
+              onClick={() => fillDemoCredentials('Customer')} 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+            >
+              Fill Customer Demo
+            </Button>
+            <Button 
+              onClick={() => fillDemoCredentials('Admin')} 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+            >
+              Fill Admin Demo
+            </Button>
+          </div>
+          
+          <div className="mt-6 text-center">
+            <span className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <a href="#" className="text-quicksite-blue hover:text-quicksite-dark-blue">
+                Contact us <ArrowRight size={14} className="inline" />
+              </a>
+            </span>
+          </div>
         </div>
       </motion.div>
     </div>

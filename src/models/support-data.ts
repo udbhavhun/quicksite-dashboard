@@ -25,14 +25,6 @@ export interface VideoTutorialItem {
   thumbnail?: string;
 }
 
-export interface ContactSupportItem {
-  id: string;
-  title: string;
-  description: string;
-  email: string;
-  phone?: string;
-}
-
 // Function to log admin edits
 export const logAdminEdit = async (
   entityType: string,
@@ -59,10 +51,7 @@ export const logAdminEdit = async (
         new_value: newValue
       });
       
-    if (error) {
-      console.error("Error logging admin edit:", error);
-      throw error;
-    }
+    if (error) throw error;
     
     return true;
   } catch (error) {
@@ -105,71 +94,4 @@ export const deleteLocalItem = <T extends { id: string }>(
   const updatedItems = items.filter(item => item.id !== itemId);
   localStorage.setItem(storageKey, JSON.stringify(updatedItems));
   return updatedItems;
-};
-
-// Contact support section
-export const getContactSupport = async (): Promise<ContactSupportItem[]> => {
-  try {
-    // First try to get from localStorage for quick loading
-    const storedContactSupport = localStorage.getItem('admin-contact-support');
-    
-    if (storedContactSupport) {
-      return JSON.parse(storedContactSupport);
-    }
-    
-    // Default contact support options if none are found
-    const defaultContactSupport: ContactSupportItem[] = [
-      {
-        id: 'contact-1',
-        title: 'Technical Support',
-        description: 'Get help with technical issues and website functionality',
-        email: 'support@quicksite.com',
-        phone: '+1 (555) 123-4567'
-      },
-      {
-        id: 'contact-2',
-        title: 'Billing & Account',
-        description: 'Questions about your account, billing, or subscriptions',
-        email: 'billing@quicksite.com',
-        phone: '+1 (555) 987-6543'
-      }
-    ];
-    
-    // Store the default in localStorage for future use
-    localStorage.setItem('admin-contact-support', JSON.stringify(defaultContactSupport));
-    
-    return defaultContactSupport;
-  } catch (error) {
-    console.error('Error getting contact support:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to load contact support information',
-      variant: 'destructive'
-    });
-    return [];
-  }
-};
-
-// Update contact support
-export const updateContactSupport = (
-  contactSupport: ContactSupportItem[],
-  updatedItem: ContactSupportItem
-): ContactSupportItem[] => {
-  return updateLocalItem(contactSupport, updatedItem, 'admin-contact-support');
-};
-
-// Add new contact support item
-export const addContactSupport = (
-  contactSupport: ContactSupportItem[],
-  newItem: ContactSupportItem
-): ContactSupportItem[] => {
-  return addLocalItem(contactSupport, newItem, 'admin-contact-support');
-};
-
-// Delete contact support item
-export const deleteContactSupport = (
-  contactSupport: ContactSupportItem[],
-  itemId: string
-): ContactSupportItem[] => {
-  return deleteLocalItem(contactSupport, itemId, 'admin-contact-support');
 };

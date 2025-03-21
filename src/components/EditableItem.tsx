@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { logAdminEdit } from '@/models/support-data';
-import { useUserStore } from '@/stores/userStore';
 
 interface EditableItemProps {
   item: Record<string, any>;
@@ -28,28 +27,13 @@ const EditableItem: React.FC<EditableItemProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState({ ...item });
-  const { profile } = useUserStore();
 
   const handleChange = (field: string, value: string) => {
     setEditedItem(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
-    // Validate that we're not saving empty values for required fields
-    const invalidFields = fields
-      .filter(field => field.type !== 'select' && !field.options) // Skip validation for select fields
-      .filter(field => !editedItem[field.name]);
-    
-    if (invalidFields.length > 0) {
-      toast({
-        title: "Validation Error",
-        description: `The following fields cannot be empty: ${invalidFields.map(f => f.label).join(', ')}`,
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Find changed fields
+    // Log changes for each field
     const changedFields = fields.filter(field => 
       editedItem[field.name] !== item[field.name]
     );
@@ -60,16 +44,14 @@ const EditableItem: React.FC<EditableItemProps> = ({
     }
     
     // Log each change to admin_edits table
-    if (profile) {
-      for (const field of changedFields) {
-        await logAdminEdit(
-          entityType,
-          item.id,
-          field.name,
-          String(item[field.name] || ''),
-          String(editedItem[field.name] || '')
-        );
-      }
+    for (const field of changedFields) {
+      await logAdminEdit(
+        entityType,
+        item.id,
+        field.name,
+        String(item[field.name] || ''),
+        String(editedItem[field.name] || '')
+      );
     }
     
     onSave(editedItem);
