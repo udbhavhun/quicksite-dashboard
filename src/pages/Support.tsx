@@ -79,12 +79,12 @@ const Support = () => {
     {
       id: 'faq-3',
       question: 'What is the typical timeline for website completion?',
-      answer: 'The timeline for website completion depends on the package you've selected. Basic websites typically take 1-2 weeks, while more complex e-commerce or custom websites can take 4-8 weeks. Your specific timeline is visible in your dashboard under the project details.'
+      answer: "The timeline for website completion depends on the package you've selected. Basic websites typically take 1-2 weeks, while more complex e-commerce or custom websites can take 4-8 weeks. Your specific timeline is visible in your dashboard under the project details."
     },
     {
       id: 'faq-4',
       question: 'How do I add content to my website?',
-      answer: 'Once your website framework is set up, you'll receive access to a content management system (CMS) where you can add and edit your website content. Our team will provide training on how to use the CMS, and you'll find video tutorials in the support section of your dashboard.'
+      answer: "Once your website framework is set up, you'll receive access to a content management system (CMS) where you can add and edit your website content. Our team will provide training on how to use the CMS, and you'll find video tutorials in the support section of your dashboard."
     },
     {
       id: 'faq-5',
