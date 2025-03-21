@@ -37,7 +37,8 @@ import {
   Trash,
   Edit,
   PlusCircle,
-  ArrowLeft
+  ArrowLeft,
+  Headphones
 } from 'lucide-react';
 import { MOCK_MESSAGE_THREADS } from '@/lib/message-data';  
 import { ORDERS, PROJECT_STATUSES } from '@/lib/data';
@@ -52,9 +53,14 @@ import {
   FAQItem, 
   DocumentationItem, 
   VideoTutorialItem,
+  ContactSupportItem,
   updateLocalItem,
   addLocalItem,
-  deleteLocalItem 
+  deleteLocalItem,
+  getContactSupport,
+  updateContactSupport,
+  addContactSupport,
+  deleteContactSupport 
 } from '@/models/support-data';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,11 +79,13 @@ const DataManagement = () => {
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const [docs, setDocs] = useState<DocumentationItem[]>([]);
   const [videos, setVideos] = useState<VideoTutorialItem[]>([]);
+  const [contactSupport, setContactSupport] = useState<ContactSupportItem[]>([]);
   
   // Dialog states
   const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
   const [isAddDocOpen, setIsAddDocOpen] = useState(false);
   const [isAddVideoOpen, setIsAddVideoOpen] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{id: string, type: string} | null>(null);
   
   // Orders state management 
@@ -95,6 +103,21 @@ const DataManagement = () => {
     setFaqs(storedFaqs ? JSON.parse(storedFaqs) : initialFaqs);
     setDocs(storedDocs ? JSON.parse(storedDocs) : initialDocs);
     setVideos(storedVideos ? JSON.parse(storedVideos) : initialVideos);
+    
+    // Load contact support data
+    getContactSupport().then(data => {
+      setContactSupport(data);
+    });
+    
+    // Record page view for analytics
+    const recordPageView = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        console.log('Data Management page viewed by user:', userData.user.id);
+      }
+    };
+    
+    recordPageView();
   }, []);
 
   // Only allow admins to access this page
@@ -187,6 +210,31 @@ const DataManagement = () => {
     toast({
       title: "Video Tutorial Deleted",
       description: "The video tutorial has been successfully deleted."
+    });
+  };
+  
+  // Update Contact Support
+  const handleUpdateContactSupport = (updatedContact: ContactSupportItem) => {
+    const updatedContacts = updateContactSupport(contactSupport, updatedContact);
+    setContactSupport(updatedContacts);
+  };
+  
+  // Add new Contact Support
+  const handleAddContactSupport = (newContact: Omit<ContactSupportItem, 'id'>) => {
+    const contactWithId = { ...newContact, id: `contact-${uuidv4().slice(0, 8)}` };
+    const updatedContacts = addContactSupport(contactSupport, contactWithId as ContactSupportItem);
+    setContactSupport(updatedContacts);
+    setIsAddContactOpen(false);
+  };
+  
+  // Delete Contact Support
+  const handleDeleteContactSupport = (id: string) => {
+    const updatedContacts = deleteContactSupport(contactSupport, id);
+    setContactSupport(updatedContacts);
+    setItemToDelete(null);
+    toast({
+      title: "Contact Support Deleted",
+      description: "The contact support option has been successfully deleted."
     });
   };
 
@@ -637,7 +685,7 @@ const DataManagement = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Support Content Management</CardTitle>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" onClick={() => setIsAddFaqOpen(true)}>
                         <Plus size={16} className="mr-2" />
                         Add FAQ
@@ -650,6 +698,10 @@ const DataManagement = () => {
                         <Plus size={16} className="mr-2" />
                         Add Video
                       </Button>
+                      <Button size="sm" variant="outline" onClick={() => setIsAddContactOpen(true)}>
+                        <Plus size={16} className="mr-2" />
+                        Add Contact
+                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -658,6 +710,7 @@ const DataManagement = () => {
                         <TabsTrigger value="faqs">FAQs</TabsTrigger>
                         <TabsTrigger value="docs">Documentation</TabsTrigger>
                         <TabsTrigger value="videos">Video Tutorials</TabsTrigger>
+                        <TabsTrigger value="contact">Contact Support</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="faqs">
@@ -833,6 +886,61 @@ const DataManagement = () => {
                           </div>
                         </div>
                       </TabsContent>
+                      
+                      <TabsContent value="contact">
+                        <div className="space-y-6">
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>ID</TableHead>
+                                  <TableHead>Title</TableHead>
+                                  <TableHead>Description</TableHead>
+                                  <TableHead>Email</TableHead>
+                                  <TableHead>Phone</TableHead>
+                                  <TableHead>Actions</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {contactSupport.map((contact) => (
+                                  <TableRow key={contact.id}>
+                                    <TableCell>{contact.id}</TableCell>
+                                    <TableCell>{contact.title}</TableCell>
+                                    <TableCell className="max-w-xs">
+                                      <div className="truncate">{contact.description}</div>
+                                    </TableCell>
+                                    <TableCell>{contact.email}</TableCell>
+                                    <TableCell>{contact.phone || 'N/A'}</TableCell>
+                                    <TableCell>
+                                      <div className="flex space-x-2">
+                                        <EditableItem
+                                          item={contact}
+                                          fields={[
+                                            { name: 'title', label: 'Title', type: 'text' },
+                                            { name: 'description', label: 'Description', type: 'textarea' },
+                                            { name: 'email', label: 'Email', type: 'text' },
+                                            { name: 'phone', label: 'Phone', type: 'text' }
+                                          ]}
+                                          onSave={handleUpdateContactSupport}
+                                          entityType="contact"
+                                        />
+                                        <Button 
+                                          size="sm" 
+                                          variant="destructive"
+                                          onClick={() => setItemToDelete({ id: contact.id, type: 'contact' })}
+                                        >
+                                          <Trash size={14} className="mr-1" />
+                                          Delete
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      </TabsContent>
                     </Tabs>
                     
                     <div className="text-right mt-4">
@@ -985,6 +1093,53 @@ const DataManagement = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Add Contact Support Dialog */}
+      <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Contact Support</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input id="contact-title" placeholder="E.g., Technical Support, Billing & Account" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea id="contact-description" placeholder="Enter a description of this support option" className="min-h-[100px]" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <Input id="contact-email" placeholder="support@example.com" type="email" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone (Optional)</label>
+              <Input id="contact-phone" placeholder="+1 (555) 123-4567" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddContactOpen(false)}>Cancel</Button>
+            <Button onClick={() => {
+              const title = (document.getElementById('contact-title') as HTMLInputElement).value;
+              const description = (document.getElementById('contact-description') as HTMLTextAreaElement).value;
+              const email = (document.getElementById('contact-email') as HTMLInputElement).value;
+              const phone = (document.getElementById('contact-phone') as HTMLInputElement).value;
+              
+              if (!title || !description || !email) {
+                toast({
+                  title: "Missing Information",
+                  description: "Please provide a title, description, and email.",
+                  variant: "destructive"
+                });
+                return;
+              }
+              
+              handleAddContactSupport({ title, description, email, phone });
+            }}>Add Contact Support</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={itemToDelete !== null} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <DialogContent>
@@ -1003,6 +1158,8 @@ const DataManagement = () => {
                 handleDeleteDoc(itemToDelete.id);
               } else if (itemToDelete.type === 'video') {
                 handleDeleteVideo(itemToDelete.id);
+              } else if (itemToDelete.type === 'contact') {
+                handleDeleteContactSupport(itemToDelete.id);
               }
             }}>Delete</Button>
           </DialogFooter>
