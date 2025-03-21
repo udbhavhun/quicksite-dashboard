@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AppSidebar from '@/components/AppSidebar';
@@ -127,7 +126,7 @@ const MOCK_MESSAGE_THREADS: MessageThread[] = [
       }
     ],
     lastMessage: {
-      content: 'Thanks for the update. I'm excited to see the integration in action!',
+      content: "Thanks for the update. I'm excited to see the integration in action!",
       timestamp: '2023-12-04T16:45:00',
       senderId: 'user-2'
     },
@@ -144,7 +143,7 @@ const MOCK_MESSAGE_THREADS: MessageThread[] = [
       },
       {
         id: 'msg-5',
-        content: 'Hi Sarah, we've completed the integration with Stripe and are now testing it to ensure everything works smoothly. We should have it live on your site within the next 48 hours.',
+        content: "Hi Sarah, we've completed the integration with Stripe and are now testing it to ensure everything works smoothly. We should have it live on your site within the next 48 hours.",
         sender: 'admin',
         senderName: 'Support Team',
         timestamp: '2023-12-04T16:15:00',
@@ -161,7 +160,7 @@ const MOCK_MESSAGE_THREADS: MessageThread[] = [
       },
       {
         id: 'msg-6',
-        content: 'Thanks for the update. I'm excited to see the integration in action!',
+        content: "Thanks for the update. I'm excited to see the integration in action!",
         sender: 'customer',
         senderName: 'Sarah Wilson',
         timestamp: '2023-12-04T16:45:00',
@@ -185,7 +184,7 @@ const MOCK_MESSAGE_THREADS: MessageThread[] = [
       }
     ],
     lastMessage: {
-      content: 'We're on track for the January 15th launch date. All major features are now complete.',
+      content: "We're on track for the January 15th launch date. All major features are now complete.",
       timestamp: '2023-12-03T11:20:00',
       senderId: 'admin-2'
     },
@@ -202,7 +201,7 @@ const MOCK_MESSAGE_THREADS: MessageThread[] = [
       },
       {
         id: 'msg-8',
-        content: 'We're on track for the January 15th launch date. All major features are now complete.',
+        content: "We're on track for the January 15th launch date. All major features are now complete.",
         sender: 'admin',
         senderName: 'Project Manager',
         timestamp: '2023-12-03T11:20:00',
