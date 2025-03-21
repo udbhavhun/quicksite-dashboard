@@ -1,332 +1,114 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
 import Header from '@/components/Header';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  BarChart, 
-  ResponsiveContainer, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  CartesianGrid,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
-import { useUserStore } from '@/stores/userStore';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
-  Activity, 
-  ArrowRight, 
-  ArrowUpRight, 
-  Clock, 
-  DownloadCloud, 
-  ExternalLink, 
-  Eye, 
-  Filter, 
-  Globe, 
-  HardDrive, 
   Search, 
   Server, 
-  ShieldCheck, 
-  TrendingUp, 
+  Globe, 
+  ArrowUpRight, 
+  Clock, 
+  Shield, 
   Users, 
-  Zap,
-  Laptop,
-  Smartphone,
-  Tablet,
-  PieChart as PieChartIcon,
-  BarChart as BarChartIcon,
-  LineChart as LineChartIcon,
-  ArrowLeft
+  TrendingUp,
+  Activity,
+  ArrowRight,
+  ArrowLeft,
+  Filter,
+  RefreshCw
 } from 'lucide-react';
+import { 
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
+import { mockSites, type SiteMetrics } from '@/lib/site-data';
 import { ORDERS } from '@/lib/data';
 
-// Types
-interface SiteMetrics {
-  id: string;
-  name: string;
-  url: string;
-  thumbnail?: string;
-  status: 'online' | 'issues' | 'offline' | 'maintenance';
-  uptime: number;
-  responseTime: number;
-  visitorsToday: number;
-  visitorsThisMonth: number;
-  pageViews: number;
-  bounceRate: number;
-  averageSessionDuration: number;
-  trafficSources: {
-    source: string;
-    percentage: number;
-  }[];
-  deviceBreakdown: {
-    device: string;
-    percentage: number;
-  }[];
-  pageLoadTime: number;
-  serverLocation: string;
-  sslExpiry: string;
-  lastUpdated: string;
-  orderId: string;
-}
-
-interface PerformanceData {
-  date: string;
-  uptime: number;
-  responseTime: number;
-  visitors: number;
-  pageViews: number;
-  bounceRate: number;
-}
-
-// Mock data
-const mockSites: SiteMetrics[] = [
-  {
-    id: 'site-1',
-    name: 'Acme E-Commerce',
-    url: 'acme-ecommerce.com',
-    status: 'online',
-    uptime: 99.98,
-    responseTime: 267,
-    visitorsToday: 342,
-    visitorsThisMonth: 8745,
-    pageViews: 32890,
-    bounceRate: 25.4,
-    averageSessionDuration: 195,
-    trafficSources: [
-      { source: 'Organic', percentage: 45 },
-      { source: 'Direct', percentage: 30 },
-      { source: 'Social', percentage: 15 },
-      { source: 'Referral', percentage: 10 }
-    ],
-    deviceBreakdown: [
-      { device: 'Desktop', percentage: 55 },
-      { device: 'Mobile', percentage: 35 },
-      { device: 'Tablet', percentage: 10 }
-    ],
-    pageLoadTime: 2.3,
-    serverLocation: 'US East',
-    sslExpiry: '2024-09-15',
-    lastUpdated: '2023-12-05T15:30:00',
-    orderId: 'ORD-2023-001'
-  },
-  {
-    id: 'site-2',
-    name: 'Wilson Travel',
-    url: 'wilson-travel.com',
-    status: 'issues',
-    uptime: 98.75,
-    responseTime: 425,
-    visitorsToday: 217,
-    visitorsThisMonth: 5631,
-    pageViews: 18752,
-    bounceRate: 32.7,
-    averageSessionDuration: 165,
-    trafficSources: [
-      { source: 'Organic', percentage: 35 },
-      { source: 'Direct', percentage: 25 },
-      { source: 'Social', percentage: 25 },
-      { source: 'Referral', percentage: 15 }
-    ],
-    deviceBreakdown: [
-      { device: 'Desktop', percentage: 40 },
-      { device: 'Mobile', percentage: 50 },
-      { device: 'Tablet', percentage: 10 }
-    ],
-    pageLoadTime: 3.7,
-    serverLocation: 'Europe (London)',
-    sslExpiry: '2024-07-22',
-    lastUpdated: '2023-12-05T14:45:00',
-    orderId: 'ORD-2023-002'
-  },
-  {
-    id: 'site-3',
-    name: 'Brown Medical',
-    url: 'brown-medical.com',
-    status: 'online',
-    uptime: 99.95,
-    responseTime: 189,
-    visitorsToday: 156,
-    visitorsThisMonth: 3412,
-    pageViews: 9875,
-    bounceRate: 18.2,
-    averageSessionDuration: 250,
-    trafficSources: [
-      { source: 'Organic', percentage: 60 },
-      { source: 'Direct', percentage: 30 },
-      { source: 'Social', percentage: 5 },
-      { source: 'Referral', percentage: 5 }
-    ],
-    deviceBreakdown: [
-      { device: 'Desktop', percentage: 70 },
-      { device: 'Mobile', percentage: 25 },
-      { device: 'Tablet', percentage: 5 }
-    ],
-    pageLoadTime: 1.9,
-    serverLocation: 'US West',
-    sslExpiry: '2024-11-10',
-    lastUpdated: '2023-12-05T16:15:00',
-    orderId: 'ORD-2023-003'
-  }
-];
-
-// Mock historical data for charts
-const mockHistoricalData: PerformanceData[] = [
-  { date: 'Nov 1', uptime: 99.9, responseTime: 280, visitors: 320, pageViews: 1250, bounceRate: 26.3 },
-  { date: 'Nov 2', uptime: 100, responseTime: 275, visitors: 345, pageViews: 1320, bounceRate: 25.8 },
-  { date: 'Nov 3', uptime: 100, responseTime: 260, visitors: 332, pageViews: 1190, bounceRate: 24.5 },
-  { date: 'Nov 4', uptime: 99.7, responseTime: 295, visitors: 310, pageViews: 1100, bounceRate: 27.2 },
-  { date: 'Nov 5', uptime: 99.8, responseTime: 270, visitors: 328, pageViews: 1230, bounceRate: 26.1 },
-  { date: 'Nov 6', uptime: 99.9, responseTime: 250, visitors: 350, pageViews: 1340, bounceRate: 24.9 },
-  { date: 'Nov 7', uptime: 100, responseTime: 240, visitors: 370, pageViews: 1420, bounceRate: 24.2 },
-  { date: 'Nov 8', uptime: 100, responseTime: 245, visitors: 365, pageViews: 1380, bounceRate: 24.0 },
-  { date: 'Nov 9', uptime: 99.9, responseTime: 255, visitors: 348, pageViews: 1290, bounceRate: 25.3 },
-  { date: 'Nov 10', uptime: 100, responseTime: 262, visitors: 342, pageViews: 1270, bounceRate: 25.6 },
-  { date: 'Nov 11', uptime: 99.8, responseTime: 280, visitors: 330, pageViews: 1210, bounceRate: 26.8 },
-  { date: 'Nov 12', uptime: 99.9, responseTime: 270, visitors: 338, pageViews: 1240, bounceRate: 26.0 },
-  { date: 'Nov 13', uptime: 100, responseTime: 260, visitors: 352, pageViews: 1350, bounceRate: 25.1 },
-  { date: 'Nov 14', uptime: 100, responseTime: 258, visitors: 360, pageViews: 1410, bounceRate: 24.7 },
-  { date: 'Nov 15', uptime: 99.9, responseTime: 265, visitors: 340, pageViews: 1260, bounceRate: 25.7 },
-  { date: 'Nov 16', uptime: 99.7, responseTime: 290, visitors: 318, pageViews: 1180, bounceRate: 27.5 },
-  { date: 'Nov 17', uptime: 99.8, responseTime: 275, visitors: 325, pageViews: 1200, bounceRate: 26.4 },
-  { date: 'Nov 18', uptime: 99.9, responseTime: 262, visitors: 345, pageViews: 1280, bounceRate: 25.5 },
-  { date: 'Nov 19', uptime: 100, responseTime: 250, visitors: 365, pageViews: 1370, bounceRate: 24.8 },
-  { date: 'Nov 20', uptime: 100, responseTime: 245, visitors: 375, pageViews: 1430, bounceRate: 24.3 },
-  { date: 'Nov 21', uptime: 99.9, responseTime: 252, visitors: 362, pageViews: 1360, bounceRate: 24.6 },
-  { date: 'Nov 22', uptime: 99.8, responseTime: 260, visitors: 350, pageViews: 1330, bounceRate: 25.0 },
-  { date: 'Nov 23', uptime: 99.9, responseTime: 265, visitors: 340, pageViews: 1290, bounceRate: 25.4 },
-  { date: 'Nov 24', uptime: 100, responseTime: 255, visitors: 355, pageViews: 1340, bounceRate: 25.2 },
-  { date: 'Nov 25', uptime: 100, responseTime: 248, visitors: 368, pageViews: 1400, bounceRate: 24.5 },
-  { date: 'Nov 26', uptime: 99.9, responseTime: 252, visitors: 360, pageViews: 1370, bounceRate: 24.7 },
-  { date: 'Nov 27', uptime: 99.8, responseTime: 258, visitors: 352, pageViews: 1330, bounceRate: 25.0 },
-  { date: 'Nov 28', uptime: 99.9, responseTime: 250, visitors: 358, pageViews: 1350, bounceRate: 24.8 },
-  { date: 'Nov 29', uptime: 100, responseTime: 245, visitors: 370, pageViews: 1390, bounceRate: 24.4 },
-  { date: 'Nov 30', uptime: 99.95, responseTime: 248, visitors: 365, pageViews: 1380, bounceRate: 24.5 }
-];
-
-// Colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-
-// Helper components
-const StatusBadge = ({ status }: { status: SiteMetrics['status'] }) => {
-  const statusStyles = {
-    online: 'bg-green-100 text-green-800',
-    issues: 'bg-yellow-100 text-yellow-800',
-    offline: 'bg-red-100 text-red-800',
-    maintenance: 'bg-blue-100 text-blue-800'
-  };
-  
-  const statusText = {
-    online: 'Online',
-    issues: 'Issues Detected',
-    offline: 'Offline',
-    maintenance: 'Maintenance'
-  };
-  
-  return (
-    <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusStyles[status]}`}>
-      {statusText[status]}
-    </span>
-  );
-};
-
-const MetricCard = ({ 
-  title, 
-  value, 
-  icon, 
-  change, 
-  subtext,
-  iconBackgroundColor = 'bg-blue-100',
-  iconColor = 'text-blue-600'
-}: { 
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  change?: { value: number; isPositive: boolean };
-  subtext?: string;
-  iconBackgroundColor?: string;
-  iconColor?: string;
-}) => {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm font-medium text-gray-500">{title}</p>
-            <div className="flex items-center mt-1">
-              <h3 className="text-2xl font-semibold">{value}</h3>
-              {change && (
-                <span className={`text-xs font-medium ml-2 ${change.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {change.isPositive ? '+' : ''}{change.value}%
-                </span>
-              )}
-            </div>
-            {subtext && <p className="text-xs text-gray-500 mt-1">{subtext}</p>}
-          </div>
-          <div className={`p-3 rounded-full ${iconBackgroundColor} ${iconColor}`}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const SitePerformance = () => {
-  const { toast } = useToast();
-  const { userType } = useUserStore();
-  const [sites, setSites] = useState<SiteMetrics[]>(mockSites);
-  const [selectedSite, setSelectedSite] = useState<SiteMetrics | null>(null);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateRange, setDateRange] = useState('30d');
-  const [chartType, setChartType] = useState('line');
-  const [isAddSiteOpen, setIsAddSiteOpen] = useState(false);
-  const [isEditSiteOpen, setIsEditSiteOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState('overview');
-  
-  // Filter sites based on search
-  const filteredSites = sites.filter(site => 
+  const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
+  const [selectedSite, setSelectedSite] = useState<SiteMetrics | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Filter sites based on search query
+  const filteredSites = mockSites.filter(site => 
     site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    site.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    site.orderId.toLowerCase().includes(searchQuery.toLowerCase())
+    site.url.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Get order name from order ID
-  const getOrderNameFromId = (orderId: string) => {
-    const order = ORDERS.find(o => o.id === orderId);
-    return order ? order.package.name : 'Unknown';
-  };
-
-  // Handle viewing site details
-  const handleViewSite = (site: SiteMetrics) => {
+  const handleViewDetails = (site: SiteMetrics) => {
     setSelectedSite(site);
+    setCurrentView('detail');
+    setActiveTab('overview');
+    // Scroll to top when viewing details
+    window.scrollTo(0, 0);
   };
 
-  // Format time in seconds to minutes and seconds
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-    return `${minutes}m ${remainingSeconds}s`;
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setSelectedSite(null);
   };
 
-  // Format large numbers with comma separators
-  const formatNumber = (num: number) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // Format bytes to human-readable format
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Format milliseconds to seconds with 2 decimal places
+  const formatLoadTime = (ms: number) => {
+    return (ms / 1000).toFixed(2) + 's';
+  };
+
+  // Generate sample daily traffic data
+  const generateDailyTrafficData = () => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        value: Math.floor(Math.random() * 500) + 500
+      };
+    });
+  };
+
+  // Generate hourly traffic data for the current day
+  const generateHourlyTrafficData = () => {
+    return Array.from({ length: 24 }, (_, i) => ({
+      name: `${i}:00`,
+      value: Math.floor(Math.random() * 200) + 50
+    }));
   };
 
   return (
@@ -337,38 +119,53 @@ const SitePerformance = () => {
         
         <main className="flex-grow p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
-            {!selectedSite ? (
-              <>
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center">
-                    <SidebarTrigger className="mr-2 sm:hidden" />
-                    <h1 className="text-3xl font-bold text-gradient">Site Performance</h1>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <SidebarTrigger className="mr-2 sm:hidden" />
+                {currentView === 'detail' && (
+                  <Button
+                    variant="ghost"
+                    className="mr-3 flex items-center"
+                    onClick={handleBackToList}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back to all sites
+                  </Button>
+                )}
+                <h1 className="text-3xl font-bold text-gradient">
+                  {currentView === 'list' ? 'Site Performance' : selectedSite?.name}
+                </h1>
+              </div>
+              
+              {currentView === 'list' && (
+                <Button>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Data
+                </Button>
+              )}
+              
+              {currentView === 'detail' && selectedSite && (
+                <div className="flex items-center gap-3">
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    selectedSite.status === 'online' ? 'bg-green-100 text-green-800' :
+                    selectedSite.status === 'issues' ? 'bg-yellow-100 text-yellow-800' :
+                    selectedSite.status === 'offline' ? 'bg-red-100 text-red-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {selectedSite.status.charAt(0).toUpperCase() + selectedSite.status.slice(1)}
                   </div>
-                  
-                  {userType === 'admin' && (
-                    <Dialog open={isAddSiteOpen} onOpenChange={setIsAddSiteOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-quicksite-blue hover:bg-quicksite-dark-blue">
-                          Add New Site
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Add New Site to Monitor</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          {/* Form fields for adding a site would go here */}
-                          <p className="text-sm text-gray-500">
-                            Form implementation for adding sites would go here in a real application.
-                          </p>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                  <Button size="sm" variant="outline" className="flex items-center">
+                    <Globe className="h-4 w-4 mr-1" />
+                    Visit Website
+                  </Button>
                 </div>
-                
+              )}
+            </div>
+            
+            {currentView === 'list' && (
+              <>
                 <div className="glass-card p-4 mb-6">
-                  <div className="flex flex-col md:flex-row gap-4 justify-between">
+                  <div className="flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                       <Input
@@ -378,363 +175,209 @@ const SitePerformance = () => {
                         className="pl-10"
                       />
                     </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Select defaultValue="all">
-                        <SelectTrigger className="w-[150px]">
-                          <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Sites</SelectItem>
-                          <SelectItem value="online">Online</SelectItem>
-                          <SelectItem value="issues">Issues</SelectItem>
-                          <SelectItem value="offline">Offline</SelectItem>
-                          <SelectItem value="maintenance">Maintenance</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      <Button variant="outline" size="icon">
-                        <Filter size={16} />
-                      </Button>
-                    </div>
+                    <Button variant="outline" className="flex items-center">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filters
+                    </Button>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredSites.map((site, index) => (
+                  {filteredSites.map((site) => (
                     <motion.div
                       key={site.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <Card className="overflow-hidden hover:shadow-md transition-shadow">
-                        <CardHeader className="p-6 pb-3">
+                      <Card className="h-full flex flex-col">
+                        <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <div>
-                              <CardTitle className="mb-1">{site.name}</CardTitle>
-                              <CardDescription className="flex items-center">
-                                <Globe size={14} className="mr-1" />
+                              <CardTitle className="text-lg">{site.name}</CardTitle>
+                              <CardDescription className="flex items-center mt-1">
+                                <Globe className="h-3 w-3 mr-1" />
                                 {site.url}
                               </CardDescription>
                             </div>
-                            <StatusBadge status={site.status} />
+                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              site.status === 'online' ? 'bg-green-100 text-green-800' :
+                              site.status === 'issues' ? 'bg-yellow-100 text-yellow-800' :
+                              site.status === 'offline' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {site.status.charAt(0).toUpperCase() + site.status.slice(1)}
+                            </div>
                           </div>
                         </CardHeader>
-                        <CardContent className="p-6 pt-3 pb-3">
-                          <div className="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                              <p className="text-xs text-gray-500">Uptime</p>
-                              <p className="font-semibold text-sm">{site.uptime}%</p>
+                        <CardContent className="py-2 flex-grow">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gray-50 rounded p-3">
+                              <div className="text-sm text-gray-500 mb-1">Uptime</div>
+                              <div className="text-xl font-semibold">{site.uptime}%</div>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Response Time</p>
-                              <p className="font-semibold text-sm">{site.responseTime}ms</p>
+                            <div className="bg-gray-50 rounded p-3">
+                              <div className="text-sm text-gray-500 mb-1">Response</div>
+                              <div className="text-xl font-semibold">{site.responseTime}ms</div>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Today's Visitors</p>
-                              <p className="font-semibold text-sm">{site.visitorsToday}</p>
+                            <div className="bg-gray-50 rounded p-3">
+                              <div className="text-sm text-gray-500 mb-1">Visitors Today</div>
+                              <div className="text-xl font-semibold">{site.visitorsToday}</div>
                             </div>
-                            <div>
-                              <p className="text-xs text-gray-500">Page Load Time</p>
-                              <p className="font-semibold text-sm">{site.pageLoadTime}s</p>
+                            <div className="bg-gray-50 rounded p-3">
+                              <div className="text-sm text-gray-500 mb-1">Page Load</div>
+                              <div className="text-xl font-semibold">{site.pageLoadTime}s</div>
                             </div>
-                          </div>
-                          
-                          <div className="mt-4">
-                            <p className="text-xs text-gray-500 mb-1">Performance Score</p>
-                            <div className="flex items-center">
-                              <div className="w-full mr-2">
-                                <Progress value={
-                                  site.status === 'online' ? 90 : 
-                                  site.status === 'issues' ? 65 :
-                                  site.status === 'maintenance' ? 50 : 30
-                                } className="h-2" />
-                              </div>
-                              <span className="text-xs font-medium">
-                                {site.status === 'online' ? '90' : 
-                                 site.status === 'issues' ? '65' :
-                                 site.status === 'maintenance' ? '50' : '30'}%
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 text-xs text-gray-500">
-                            <p>Related Order: <span className="font-medium">{site.orderId}</span></p>
-                            <p className="truncate">{getOrderNameFromId(site.orderId)}</p>
                           </div>
                         </CardContent>
-                        <CardFooter className="p-4 pt-0 border-t border-gray-100 mt-2">
+                        <CardFooter className="pt-2">
                           <Button 
                             variant="outline" 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => handleViewSite(site)}
+                            className="w-full flex items-center justify-center"
+                            onClick={() => handleViewDetails(site)}
                           >
                             View Details
-                            <ArrowRight size={14} className="ml-2" />
+                            <ArrowRight className="h-4 w-4 ml-2" />
                           </Button>
                         </CardFooter>
                       </Card>
                     </motion.div>
                   ))}
-                  
-                  {filteredSites.length === 0 && (
-                    <div className="col-span-full text-center py-10">
-                      <p className="text-gray-500">No sites found matching your search criteria.</p>
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center mb-6">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedSite(null)}
-                    className="mr-4"
-                  >
-                    <ArrowLeft size={16} className="mr-1" />
-                    Back to All Sites
-                  </Button>
-                  
-                  <div>
-                    <h1 className="text-2xl font-bold">{selectedSite.name}</h1>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Globe size={14} className="mr-1" />
-                      <a 
-                        href={`https://${selectedSite.url}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:text-quicksite-blue flex items-center"
-                      >
-                        {selectedSite.url}
-                        <ExternalLink size={12} className="ml-1" />
-                      </a>
-                      <span className="mx-2">•</span>
-                      <StatusBadge status={selectedSite.status} />
-                    </div>
-                  </div>
-                  
-                  {userType === 'admin' && (
-                    <div className="ml-auto">
-                      <Dialog open={isEditSiteOpen} onOpenChange={setIsEditSiteOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            Edit Site Settings
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Edit Site Settings</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            {/* Form fields for editing site would go here */}
-                            <p className="text-sm text-gray-500">
-                              Form implementation for editing site settings would go here in a real application.
-                            </p>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  )}
                 </div>
                 
-                <div className="mb-6">
-                  <Tabs value={currentTab} onValueChange={setCurrentTab}>
-                    <TabsList className="mb-6 glass-card p-1 bg-white/50 overflow-x-auto flex whitespace-nowrap">
-                      <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                        <Activity size={16} className="mr-2" />
-                        Overview
-                      </TabsTrigger>
-                      <TabsTrigger value="visitors" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                        <Users size={16} className="mr-2" />
-                        Visitors
-                      </TabsTrigger>
-                      <TabsTrigger value="performance" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                        <Zap size={16} className="mr-2" />
-                        Performance
-                      </TabsTrigger>
-                      <TabsTrigger value="uptime" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                        <TrendingUp size={16} className="mr-2" />
-                        Uptime
-                      </TabsTrigger>
-                      <TabsTrigger value="technical" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                        <Server size={16} className="mr-2" />
-                        Technical
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <div className="mb-6">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <div className="flex items-center">
-                          <p className="text-sm text-gray-500 mr-2">Date Range:</p>
-                          <Select value={dateRange} onValueChange={setDateRange}>
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue placeholder="Select date range" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="7d">Last 7 days</SelectItem>
-                              <SelectItem value="30d">Last 30 days</SelectItem>
-                              <SelectItem value="90d">Last 90 days</SelectItem>
-                              <SelectItem value="6m">Last 6 months</SelectItem>
-                              <SelectItem value="1y">Last year</SelectItem>
-                            </SelectContent>
-                          </Select>
+                {filteredSites.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-4">🔍</div>
+                    <h3 className="text-lg font-semibold mb-2">No sites found</h3>
+                    <p className="text-gray-500">
+                      Try adjusting your search or filters
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+            
+            {currentView === 'detail' && selectedSite && (
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-500">Uptime</p>
+                          <h3 className="text-2xl font-bold">{selectedSite.uptime}%</h3>
                         </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm text-gray-500 mr-2">Chart Type:</p>
-                          <div className="flex border rounded-md overflow-hidden">
-                            <Button 
-                              variant={chartType === 'line' ? 'default' : 'ghost'} 
-                              size="sm"
-                              className="rounded-none h-8 px-3"
-                              onClick={() => setChartType('line')}
-                            >
-                              <LineChartIcon size={16} />
-                            </Button>
-                            <Button 
-                              variant={chartType === 'bar' ? 'default' : 'ghost'} 
-                              size="sm"
-                              className="rounded-none h-8 px-3 border-l border-r"
-                              onClick={() => setChartType('bar')}
-                            >
-                              <BarChartIcon size={16} />
-                            </Button>
-                            <Button 
-                              variant={chartType === 'area' ? 'default' : 'ghost'} 
-                              size="sm"
-                              className="rounded-none h-8 px-3"
-                              onClick={() => setChartType('area')}
-                            >
-                              <PieChartIcon size={16} />
-                            </Button>
-                          </div>
-                          
-                          <Button variant="outline" size="sm">
-                            <DownloadCloud size={14} className="mr-1" />
-                            Export
-                          </Button>
+                        <div className={`p-3 rounded-full ${
+                          selectedSite.uptime > 99 ? 'bg-green-100' : 
+                          selectedSite.uptime > 95 ? 'bg-yellow-100' : 'bg-red-100'
+                        }`}>
+                          <Activity className={`h-5 w-5 ${
+                            selectedSite.uptime > 99 ? 'text-green-600' : 
+                            selectedSite.uptime > 95 ? 'text-yellow-600' : 'text-red-600'
+                          }`} />
                         </div>
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <MetricCard
-                          title="Uptime"
-                          value={`${selectedSite.uptime}%`}
-                          icon={<TrendingUp size={20} />}
-                          change={{ value: 0.2, isPositive: true }}
-                          subtext="Last 30 days"
-                          iconBackgroundColor="bg-green-100"
-                          iconColor="text-green-600"
-                        />
-                        <MetricCard
-                          title="Response Time"
-                          value={`${selectedSite.responseTime} ms`}
-                          icon={<Clock size={20} />}
-                          change={{ value: 5.3, isPositive: false }}
-                          subtext="Average"
-                          iconBackgroundColor="bg-amber-100"
-                          iconColor="text-amber-600"
-                        />
-                        <MetricCard
-                          title="Visitors Today"
-                          value={formatNumber(selectedSite.visitorsToday)}
-                          icon={<Users size={20} />}
-                          change={{ value: 12.7, isPositive: true }}
-                          subtext="vs. yesterday"
-                          iconBackgroundColor="bg-purple-100"
-                          iconColor="text-purple-600"
-                        />
-                        <MetricCard
-                          title="Page Load Time"
-                          value={`${selectedSite.pageLoadTime} s`}
-                          icon={<Zap size={20} />}
-                          change={{ value: 8.1, isPositive: true }}
-                          subtext="Average"
-                          iconBackgroundColor="bg-blue-100"
-                          iconColor="text-blue-600"
+                      <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${
+                            selectedSite.uptime > 99 ? 'bg-green-500' : 
+                            selectedSite.uptime > 95 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${selectedSite.uptime}%` }}
                         />
                       </div>
-                    </div>
-                    
-                    <TabsContent value="overview" className="space-y-6">
-                      <Card className="overflow-hidden">
-                        <CardHeader>
-                          <CardTitle>Visitors Overview</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                              {chartType === 'line' ? (
-                                <LineChart
-                                  data={mockHistoricalData}
-                                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                                >
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis dataKey="date" />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Line type="monotone" dataKey="visitors" stroke="#8884d8" />
-                                  <Line type="monotone" dataKey="pageViews" stroke="#82ca9d" />
-                                </LineChart>
-                              ) : chartType === 'bar' ? (
-                                <BarChart
-                                  data={mockHistoricalData}
-                                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                                >
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis dataKey="date" />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Bar dataKey="visitors" fill="#8884d8" />
-                                  <Bar dataKey="pageViews" fill="#82ca9d" />
-                                </BarChart>
-                              ) : (
-                                <AreaChart
-                                  data={mockHistoricalData}
-                                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                                >
-                                  <CartesianGrid strokeDasharray="3 3" />
-                                  <XAxis dataKey="date" />
-                                  <YAxis />
-                                  <Tooltip />
-                                  <Area type="monotone" dataKey="visitors" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                                  <Area type="monotone" dataKey="pageViews" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
-                                </AreaChart>
-                              )}
-                            </ResponsiveContainer>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-500">Response Time</p>
+                          <h3 className="text-2xl font-bold">{selectedSite.responseTime}ms</h3>
+                        </div>
+                        <div className={`p-3 rounded-full ${
+                          selectedSite.responseTime < 300 ? 'bg-green-100' : 
+                          selectedSite.responseTime < 500 ? 'bg-yellow-100' : 'bg-red-100'
+                        }`}>
+                          <Clock className={`h-5 w-5 ${
+                            selectedSite.responseTime < 300 ? 'text-green-600' : 
+                            selectedSite.responseTime < 500 ? 'text-yellow-600' : 'text-red-600'
+                          }`} />
+                        </div>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">28ms faster than last week</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-500">Page Load Time</p>
+                          <h3 className="text-2xl font-bold">{selectedSite.pageLoadTime}s</h3>
+                        </div>
+                        <div className={`p-3 rounded-full ${
+                          selectedSite.pageLoadTime < 2.5 ? 'bg-green-100' : 
+                          selectedSite.pageLoadTime < 4 ? 'bg-yellow-100' : 'bg-red-100'
+                        }`}>
+                          <TrendingUp className={`h-5 w-5 ${
+                            selectedSite.pageLoadTime < 2.5 ? 'text-green-600' : 
+                            selectedSite.pageLoadTime < 4 ? 'text-yellow-600' : 'text-red-600'
+                          }`} />
+                        </div>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">0.3s improvement</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-500">Visitors Today</p>
+                          <h3 className="text-2xl font-bold">{selectedSite.visitorsToday}</h3>
+                        </div>
+                        <div className="p-3 rounded-full bg-blue-100">
+                          <Users className="h-5 w-5 text-blue-600" />
+                        </div>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {selectedSite.visitorsToday > 300 ? '+12% from yesterday' : '-8% from yesterday'}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+                  <TabsList className="glass-card mb-6">
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="performance">Performance</TabsTrigger>
+                    <TabsTrigger value="traffic">Traffic</TabsTrigger>
+                    <TabsTrigger value="technical">Technical</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="overview">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <Card className="mb-6">
                           <CardHeader>
-                            <CardTitle>Traffic Sources</CardTitle>
+                            <CardTitle>Visitors</CardTitle>
+                            <CardDescription>Daily visitor count over the past week</CardDescription>
                           </CardHeader>
                           <CardContent>
-                            <div className="h-[250px]">
+                            <div className="h-80">
                               <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                  <Pie
-                                    data={selectedSite.trafficSources}
-                                    dataKey="percentage"
-                                    nameKey="source"
-                                    cx="50%"
-                                    cy="50%"
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    label={({ source, percent }) => `${source}: ${(percent * 100).toFixed(0)}%`}
-                                  >
-                                    {selectedSite.trafficSources.map((entry, index) => (
-                                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                  </Pie>
+                                <BarChart
+                                  data={generateDailyTrafficData()}
+                                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis dataKey="name" />
+                                  <YAxis />
                                   <Tooltip />
-                                </PieChart>
+                                  <Bar dataKey="value" fill="#3B82F6" />
+                                </BarChart>
                               </ResponsiveContainer>
                             </div>
                           </CardContent>
@@ -742,21 +385,51 @@ const SitePerformance = () => {
                         
                         <Card>
                           <CardHeader>
-                            <CardTitle>Device Breakdown</CardTitle>
+                            <CardTitle>Page Load Times</CardTitle>
+                            <CardDescription>Average load time over the past 30 days</CardDescription>
                           </CardHeader>
                           <CardContent>
-                            <div className="h-[250px]">
+                            <div className="h-80">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart
+                                  data={Array.from({ length: 30 }, (_, i) => ({
+                                    name: `Day ${i + 1}`,
+                                    value: Math.random() * 2 + 1
+                                  }))}
+                                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                                >
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis dataKey="name" />
+                                  <YAxis />
+                                  <Tooltip />
+                                  <Line type="monotone" dataKey="value" stroke="#8884d8" />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      
+                      <div>
+                        <Card className="mb-6">
+                          <CardHeader>
+                            <CardTitle>Device Breakdown</CardTitle>
+                            <CardDescription>Visitor device types</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-64">
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                   <Pie
                                     data={selectedSite.deviceBreakdown}
-                                    dataKey="percentage"
-                                    nameKey="device"
                                     cx="50%"
                                     cy="50%"
+                                    labelLine={false}
                                     outerRadius={80}
-                                    fill="#82ca9d"
-                                    label={({ device, percent }) => `${device}: ${(percent * 100).toFixed(0)}%`}
+                                    fill="#8884d8"
+                                    dataKey="percentage"
+                                    nameKey="device"
+                                    label={({ device, percentage }) => `${device}: ${percentage}%`}
                                   >
                                     {selectedSite.deviceBreakdown.map((entry, index) => (
                                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -767,219 +440,384 @@ const SitePerformance = () => {
                               </ResponsiveContainer>
                             </div>
                             
-                            <div className="flex justify-center mt-4 space-x-6">
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-blue-100 text-blue-600 mr-2">
-                                  <Laptop size={16} />
+                            <div className="mt-4">
+                              {selectedSite.deviceBreakdown.map((item, index) => (
+                                <div key={index} className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center">
+                                    <div 
+                                      className="w-3 h-3 rounded-full mr-2"
+                                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                    />
+                                    <span>{item.device}</span>
+                                  </div>
+                                  <span>{item.percentage}%</span>
                                 </div>
-                                <div>
-                                  <p className="text-sm font-medium">Desktop</p>
-                                  <p className="text-xs text-gray-500">{selectedSite.deviceBreakdown[0].percentage}%</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-green-100 text-green-600 mr-2">
-                                  <Smartphone size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">Mobile</p>
-                                  <p className="text-xs text-gray-500">{selectedSite.deviceBreakdown[1].percentage}%</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-purple-100 text-purple-600 mr-2">
-                                  <Tablet size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">Tablet</p>
-                                  <p className="text-xs text-gray-500">{selectedSite.deviceBreakdown[2].percentage}%</p>
-                                </div>
-                              </div>
+                              ))}
                             </div>
                           </CardContent>
                         </Card>
+                        
+                        <Card className="mb-6">
+                          <CardHeader>
+                            <CardTitle>Traffic Sources</CardTitle>
+                            <CardDescription>Where your visitors come from</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {selectedSite.trafficSources.map((source, index) => (
+                                <div key={index}>
+                                  <div className="flex justify-between mb-1">
+                                    <span className="text-sm font-medium">{source.source}</span>
+                                    <span className="text-sm">{source.percentage}%</span>
+                                  </div>
+                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                      className="h-full"
+                                      style={{ 
+                                        width: `${source.percentage}%`,
+                                        backgroundColor: COLORS[index % COLORS.length]
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Quick Stats</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <dl className="space-y-4">
+                              <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Bounce Rate</dt>
+                                <dd className="text-sm font-semibold">{selectedSite.bounceRate}%</dd>
+                              </div>
+                              <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Avg. Session Duration</dt>
+                                <dd className="text-sm font-semibold">{selectedSite.averageSessionDuration}s</dd>
+                              </div>
+                              <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Page Views</dt>
+                                <dd className="text-sm font-semibold">{selectedSite.pageViews.toLocaleString()}</dd>
+                              </div>
+                              <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Monthly Visitors</dt>
+                                <dd className="text-sm font-semibold">{selectedSite.visitorsThisMonth.toLocaleString()}</dd>
+                              </div>
+                            </dl>
+                          </CardContent>
+                        </Card>
                       </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="performance">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Page Load Time Breakdown</CardTitle>
+                          <CardDescription>Average timing for each phase of page load</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {[
+                              { name: 'DNS Lookup', value: Math.random() * 50 + 10 },
+                              { name: 'TCP Connection', value: Math.random() * 50 + 20 },
+                              { name: 'TLS Negotiation', value: Math.random() * 70 + 30 },
+                              { name: 'Time to First Byte', value: Math.random() * 100 + 50 },
+                              { name: 'Content Download', value: Math.random() * 300 + 100 },
+                              { name: 'DOM Processing', value: Math.random() * 200 + 50 },
+                              { name: 'Render', value: Math.random() * 100 + 50 }
+                            ].map((item, index) => (
+                              <div key={index}>
+                                <div className="flex justify-between mb-1">
+                                  <span className="text-sm font-medium">{item.name}</span>
+                                  <span className="text-sm">{item.value.toFixed(2)}ms</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-blue-500"
+                                    style={{ width: `${(item.value / 500) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Asset Performance</CardTitle>
+                          <CardDescription>Load times for key assets</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead>
+                                <tr>
+                                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
+                                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Load Time</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {[
+                                  { name: 'main.css', size: Math.random() * 100000 + 50000, load: Math.random() * 100 + 20 },
+                                  { name: 'app.js', size: Math.random() * 500000 + 200000, load: Math.random() * 200 + 50 },
+                                  { name: 'vendor.js', size: Math.random() * 800000 + 300000, load: Math.random() * 300 + 80 },
+                                  { name: 'hero-image.jpg', size: Math.random() * 2000000 + 500000, load: Math.random() * 400 + 100 },
+                                  { name: 'fonts.woff2', size: Math.random() * 100000 + 20000, load: Math.random() * 150 + 30 }
+                                ].map((asset, index) => (
+                                  <tr key={index} className="hover:bg-gray-50">
+                                    <td className="px-2 py-3 whitespace-nowrap text-sm font-medium">{asset.name}</td>
+                                    <td className="px-2 py-3 whitespace-nowrap text-sm text-gray-500">{formatBytes(asset.size)}</td>
+                                    <td className="px-2 py-3 whitespace-nowrap text-sm text-gray-500">{formatLoadTime(asset.load)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="md:col-span-2">
+                        <CardHeader>
+                          <CardTitle>Speed Index Over Time</CardTitle>
+                          <CardDescription>Website performance score trends</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart
+                                data={Array.from({ length: 30 }, (_, i) => ({
+                                  name: `Day ${i + 1}`,
+                                  mobile: Math.floor(Math.random() * 40) + 60,
+                                  desktop: Math.floor(Math.random() * 20) + 75
+                                }))}
+                                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis domain={[0, 100]} />
+                                <Tooltip />
+                                <Legend />
+                                <Line type="monotone" dataKey="mobile" stroke="#8884d8" name="Mobile Score" />
+                                <Line type="monotone" dataKey="desktop" stroke="#82ca9d" name="Desktop Score" />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="traffic">
+                    <div className="grid grid-cols-1 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Hourly Traffic Today</CardTitle>
+                          <CardDescription>Visitors per hour</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                data={generateHourlyTrafficData()}
+                                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="value" fill="#3B82F6" />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Card>
                           <CardHeader>
-                            <CardTitle>Engagement Metrics</CardTitle>
+                            <CardTitle>Popular Pages</CardTitle>
+                            <CardDescription>Most visited pages</CardDescription>
                           </CardHeader>
                           <CardContent>
                             <div className="space-y-4">
-                              <div>
-                                <div className="flex justify-between mb-1">
-                                  <p className="text-sm text-gray-500">Bounce Rate</p>
-                                  <p className="text-sm font-medium">{selectedSite.bounceRate}%</p>
+                              {[
+                                { page: 'Home', visits: Math.floor(Math.random() * 1000) + 2000 },
+                                { page: 'Products', visits: Math.floor(Math.random() * 1000) + 1000 },
+                                { page: 'About Us', visits: Math.floor(Math.random() * 500) + 500 },
+                                { page: 'Contact', visits: Math.floor(Math.random() * 300) + 200 },
+                                { page: 'Blog', visits: Math.floor(Math.random() * 800) + 800 }
+                              ].map((item, index) => (
+                                <div key={index}>
+                                  <div className="flex justify-between mb-1">
+                                    <span className="text-sm font-medium">{item.page}</span>
+                                    <span className="text-sm">{item.visits.toLocaleString()} visits</span>
+                                  </div>
+                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                      className="h-full bg-blue-500"
+                                      style={{ width: `${(item.visits / 3000) * 100}%` }}
+                                    />
+                                  </div>
                                 </div>
-                                <Progress value={selectedSite.bounceRate} className="h-2" />
-                              </div>
-                              <div>
-                                <div className="flex justify-between mb-1">
-                                  <p className="text-sm text-gray-500">Avg. Session Duration</p>
-                                  <p className="text-sm font-medium">{formatTime(selectedSite.averageSessionDuration)}</p>
-                                </div>
-                                <Progress value={(selectedSite.averageSessionDuration / 600) * 100} className="h-2" />
-                              </div>
-                              <div>
-                                <div className="flex justify-between mb-1">
-                                  <p className="text-sm text-gray-500">Pages Per Session</p>
-                                  <p className="text-sm font-medium">3.7</p>
-                                </div>
-                                <Progress value={74} className="h-2" />
-                              </div>
+                              ))}
                             </div>
                           </CardContent>
                         </Card>
                         
                         <Card>
                           <CardHeader>
-                            <CardTitle>Top Pages</CardTitle>
+                            <CardTitle>Referral Sources</CardTitle>
+                            <CardDescription>Top referrers to your site</CardDescription>
                           </CardHeader>
                           <CardContent>
                             <div className="space-y-4">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium">/home</p>
-                                  <p className="text-xs text-gray-500">42% of total views</p>
+                              {[
+                                { name: 'Google', visits: Math.floor(Math.random() * 1000) + 2000 },
+                                { name: 'Facebook', visits: Math.floor(Math.random() * 500) + 500 },
+                                { name: 'Twitter', visits: Math.floor(Math.random() * 300) + 300 },
+                                { name: 'LinkedIn', visits: Math.floor(Math.random() * 200) + 200 },
+                                { name: 'Instagram', visits: Math.floor(Math.random() * 150) + 150 }
+                              ].map((item, index) => (
+                                <div key={index}>
+                                  <div className="flex justify-between mb-1">
+                                    <span className="text-sm font-medium">{item.name}</span>
+                                    <span className="text-sm">{item.visits.toLocaleString()} visits</span>
+                                  </div>
+                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                      className="h-full bg-blue-500"
+                                      style={{ width: `${(item.visits / 3000) * 100}%` }}
+                                    />
+                                  </div>
                                 </div>
-                                <p className="text-sm font-medium">13,245</p>
-                              </div>
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium">/products</p>
-                                  <p className="text-xs text-gray-500">28% of total views</p>
-                                </div>
-                                <p className="text-sm font-medium">8,923</p>
-                              </div>
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium">/about</p>
-                                  <p className="text-xs text-gray-500">15% of total views</p>
-                                </div>
-                                <p className="text-sm font-medium">4,762</p>
-                              </div>
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium">/contact</p>
-                                  <p className="text-xs text-gray-500">10% of total views</p>
-                                </div>
-                                <p className="text-sm font-medium">3,185</p>
-                              </div>
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <p className="text-sm font-medium">/blog</p>
-                                  <p className="text-xs text-gray-500">5% of total views</p>
-                                </div>
-                                <p className="text-sm font-medium">1,592</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Technical Info</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-blue-100 text-blue-600 mr-3">
-                                  <Server size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Server Location</p>
-                                  <p className="text-sm font-medium">{selectedSite.serverLocation}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-green-100 text-green-600 mr-3">
-                                  <ShieldCheck size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">SSL Certificate</p>
-                                  <p className="text-sm font-medium">Valid until {new Date(selectedSite.sslExpiry).toLocaleDateString()}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-purple-100 text-purple-600 mr-3">
-                                  <HardDrive size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Server Type</p>
-                                  <p className="text-sm font-medium">Nginx</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-amber-100 text-amber-600 mr-3">
-                                  <Globe size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">DNS Provider</p>
-                                  <p className="text-sm font-medium">Cloudflare</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-red-100 text-red-600 mr-3">
-                                  <Eye size={16} />
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Last Monitored</p>
-                                  <p className="text-sm font-medium">{new Date(selectedSite.lastUpdated).toLocaleString()}</p>
-                                </div>
-                              </div>
+                              ))}
                             </div>
                           </CardContent>
                         </Card>
                       </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="visitors">
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="technical">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <Card>
                         <CardHeader>
-                          <CardTitle>Visitor Analytics</CardTitle>
+                          <CardTitle>Technical Information</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-500">Detailed visitor analytics content would go here.</p>
+                          <dl className="space-y-4">
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">Server Location</dt>
+                              <dd className="text-sm font-semibold">{selectedSite.serverLocation}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">SSL Certificate Expiry</dt>
+                              <dd className="text-sm font-semibold">{new Date(selectedSite.sslExpiry).toLocaleDateString()}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">DNS Provider</dt>
+                              <dd className="text-sm font-semibold">Cloudflare</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">Web Server</dt>
+                              <dd className="text-sm font-semibold">Nginx 1.21.4</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">CDN</dt>
+                              <dd className="text-sm font-semibold">Cloudflare</dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-sm font-medium text-gray-500">IP Address</dt>
+                              <dd className="text-sm font-semibold">192.168.1.1</dd>
+                            </div>
+                          </dl>
                         </CardContent>
                       </Card>
-                    </TabsContent>
-                    
-                    <TabsContent value="performance">
+                      
                       <Card>
                         <CardHeader>
-                          <CardTitle>Performance Metrics</CardTitle>
+                          <CardTitle>Server Health</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-500">Detailed performance metrics content would go here.</p>
+                          <div className="space-y-4">
+                            {[
+                              { name: 'CPU Usage', value: Math.floor(Math.random() * 40) + 20, max: 100 },
+                              { name: 'Memory Usage', value: Math.floor(Math.random() * 60) + 30, max: 100 },
+                              { name: 'Disk Usage', value: Math.floor(Math.random() * 50) + 30, max: 100 },
+                              { name: 'Network I/O', value: Math.floor(Math.random() * 70) + 20, max: 100 }
+                            ].map((item, index) => (
+                              <div key={index}>
+                                <div className="flex justify-between mb-1">
+                                  <span className="text-sm font-medium">{item.name}</span>
+                                  <span className="text-sm">{item.value}%</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full ${
+                                      item.value < 50 ? 'bg-green-500' : 
+                                      item.value < 80 ? 'bg-yellow-500' : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${(item.value / item.max) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </CardContent>
                       </Card>
-                    </TabsContent>
-                    
-                    <TabsContent value="uptime">
-                      <Card>
+                      
+                      <Card className="md:col-span-2">
                         <CardHeader>
-                          <CardTitle>Uptime Monitoring</CardTitle>
+                          <CardTitle>Recent Errors</CardTitle>
+                          <CardDescription>Last 5 errors detected</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-gray-500">Detailed uptime monitoring content would go here.</p>
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead>
+                              <tr>
+                                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
+                                <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {selectedSite.status === 'issues' || selectedSite.status === 'offline' ? (
+                                [
+                                  { time: '2 hours ago', type: '404', message: 'Page not found', url: '/missing-page' },
+                                  { time: '4 hours ago', type: 'JavaScript', message: 'Uncaught TypeError: Cannot read property', url: '/product/detail' },
+                                  { time: '1 day ago', type: '500', message: 'Internal server error', url: '/api/data' },
+                                  { time: '1 day ago', type: 'Connection', message: 'Failed to fetch API data', url: '/dashboard' },
+                                  { time: '2 days ago', type: 'CSS', message: 'Failed to load resource', url: '/styles/main.css' }
+                                ].map((error, index) => (
+                                  <tr key={index} className="hover:bg-gray-50">
+                                    <td className="px-2 py-3 whitespace-nowrap text-sm text-gray-500">{error.time}</td>
+                                    <td className="px-2 py-3 whitespace-nowrap text-sm font-medium text-red-500">{error.type}</td>
+                                    <td className="px-2 py-3 text-sm text-gray-500">{error.message}</td>
+                                    <td className="px-2 py-3 text-sm text-gray-500">{error.url}</td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={4} className="px-2 py-8 text-center text-gray-500">No errors detected in the last 7 days</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
                         </CardContent>
                       </Card>
-                    </TabsContent>
-                    
-                    <TabsContent value="technical">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Technical Details</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-500">Detailed technical information would go here.</p>
-                        </CardContent>
-                      </Card>
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             )}
           </div>
         </main>

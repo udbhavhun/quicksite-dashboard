@@ -26,10 +26,11 @@ import {
   Plus,
   Trash,
   Edit,
-  PlusCircle
+  PlusCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { MOCK_MESSAGE_THREADS } from '@/lib/message-data';  
-import { ORDERS } from '@/lib/data';
+import { ORDERS, PROJECT_STATUSES } from '@/lib/data';
 import { mockSites } from '@/lib/site-data';
 import { faqs, documentation, videoTutorials } from '@/lib/support-data';
 
@@ -147,16 +148,16 @@ const DataManagement = () => {
                                 <td className="border p-2">{order.package.name}</td>
                                 <td className="border p-2">
                                   <span className={`px-2 py-1 rounded-full text-xs ${
-                                    order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                    order.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    order.status.id === 'completed' ? 'bg-green-100 text-green-800' :
+                                    order.status.id === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                                    order.status.id === 'pending-input' ? 'bg-yellow-100 text-yellow-800' :
                                     'bg-gray-100 text-gray-800'
                                   }`}>
-                                    {order.status}
+                                    {order.status.label}
                                   </span>
                                 </td>
-                                <td className="border p-2">${order.amount}</td>
-                                <td className="border p-2">{new Date(order.date).toLocaleDateString()}</td>
+                                <td className="border p-2">${order.totalAmount}</td>
+                                <td className="border p-2">{new Date(order.orderDate).toLocaleDateString()}</td>
                                 <td className="border p-2">
                                   <div className="flex space-x-2">
                                     <Button size="sm" variant="outline">
