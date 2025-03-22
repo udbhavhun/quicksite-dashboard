@@ -143,6 +143,12 @@ const Index = () => {
                       View All Orders <ExternalLink size={16} className="ml-1" />
                     </button>
                   </div>
+                  
+                  {/* Order Summary for Admin */}
+                  <div className="mb-8">
+                    <OrderSummary orders={ORDERS} />
+                  </div>
+                  
                   {/* Admin orders table */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

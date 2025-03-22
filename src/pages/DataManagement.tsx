@@ -19,7 +19,7 @@ import {
   Search,
   Activity
 } from 'lucide-react';
-import { ORDERS } from '@/lib/data';
+import { ORDERS, ProjectStatus } from '@/lib/data';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -205,6 +205,28 @@ const DataManagement = () => {
     setItemToDelete(null);
   };
 
+  // Handle order updates
+  const handleUpdateOrder = (orderId: string, status: ProjectStatus, assignedTo?: string) => {
+    const updatedOrders = orders.map(order => {
+      if (order.id === orderId) {
+        return {
+          ...order,
+          status,
+          assignee: assignedTo || order.assignee
+        };
+      }
+      return order;
+    });
+    setOrders(updatedOrders);
+  };
+
+  // Handle order deletion
+  const handleDeleteOrder = (orderId: string) => {
+    const updatedOrders = orders.filter(order => order.id !== orderId);
+    setOrders(updatedOrders);
+    setItemToDelete(null);
+  };
+
   return (
     <div className="min-h-screen w-full flex group/sidebar-wrapper">
       <AppSidebar />
@@ -248,7 +270,12 @@ const DataManagement = () => {
               </TabsList>
               
               <TabsContent value="orders">
-                <OrderManagement orders={orders} setOrders={setOrders} />
+                <OrderManagement 
+                  orders={orders} 
+                  onUpdate={handleUpdateOrder}
+                  onDelete={handleDeleteOrder}
+                  setItemToDelete={setItemToDelete}
+                />
               </TabsContent>
               
               <TabsContent value="messages">

@@ -76,6 +76,8 @@ export const useUserStore = create<UserState>()(
             if (profileData) {
               console.log("Setting profile:", profileData);
               
+              // Ensure we have the correct profile interface with optional fields
+              // if they don't exist in the database
               set({
                 isAuthenticated: true,
                 userType: profileData.role as UserType,
@@ -86,8 +88,8 @@ export const useUserStore = create<UserState>()(
                   email: data.user.email || '',
                   role: profileData.role as UserType,
                   avatar: profileData.avatar_url,
-                  company: profileData.company,
-                  phone: profileData.phone
+                  company: profileData.company || undefined,
+                  phone: profileData.phone || undefined
                 }
               });
               
@@ -162,17 +164,27 @@ export const useUserStore = create<UserState>()(
           userType: profileUpdates.role ? profileUpdates.role : state.userType
         }));
         
+        // Prepare Supabase update object with proper field names
+        const supabaseUpdate: any = {
+          name: profileUpdates.name || currentProfile.name,
+          avatar_url: profileUpdates.avatar,
+          updated_at: new Date().toISOString()
+        };
+        
+        // Only add these fields if they are provided in the update
+        if (profileUpdates.company !== undefined) {
+          supabaseUpdate.company = profileUpdates.company;
+        }
+        
+        if (profileUpdates.phone !== undefined) {
+          supabaseUpdate.phone = profileUpdates.phone;
+        }
+        
         // Update profile in Supabase
         try {
           const { error } = await supabase
             .from('profiles')
-            .update({
-              name: profileUpdates.name || currentProfile.name,
-              avatar_url: profileUpdates.avatar,
-              company: profileUpdates.company || currentProfile.company,
-              phone: profileUpdates.phone || currentProfile.phone,
-              updated_at: new Date().toISOString()
-            })
+            .update(supabaseUpdate)
             .eq('id', currentProfile.id);
             
           if (error) {

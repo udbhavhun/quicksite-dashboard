@@ -1,179 +1,195 @@
 
-import React, { useEffect, useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
-  Package, 
+  Home, 
+  ShoppingBag, 
+  User, 
   Settings, 
-  Headphones, 
-  BarChart3, 
-  Bug,
-  Lightbulb,
-  MessageSquare,
+  HelpCircle, 
+  BarChart2, 
+  Bug, 
+  Lightbulb, 
+  MessageCircle,
   Database,
-  Users,
-  ChevronRight
+  Users
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { 
   Sidebar, 
-  SidebarContent, 
-  SidebarHeader, 
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
+  SidebarContent,
+  SidebarInset,
   SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarFooter,
+  SidebarToggle
 } from '@/components/ui/sidebar';
 import { useUserStore } from '@/stores/userStore';
+import { useMobile } from '@/hooks/use-mobile';
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { profile } = useUserStore();
-  const [activeGroups, setActiveGroups] = useState<Record<string, boolean>>({
-    site: false,
-  });
+  const navigate = useNavigate();
+  const isMobile = useMobile();
+  const { userType, logout } = useUserStore();
   
-  const isAdmin = profile?.role === 'admin';
+  const isActive = (path: string) => location.pathname === path;
   
-  useEffect(() => {
-    // Auto-expand groups based on current path
-    const newActiveGroups = { ...activeGroups };
-    
-    if (location.pathname.includes('/site-')) {
-      newActiveGroups.site = true;
-    }
-    
-    setActiveGroups(newActiveGroups);
-  }, [location.pathname]);
-  
-  const toggleGroup = (group: string) => {
-    setActiveGroups(prev => ({
-      ...prev,
-      [group]: !prev[group]
-    }));
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
   
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center px-6 py-5">
-          <Link to="/" className="text-2xl font-bold text-gradient">quicksite</Link>
-          <div className="w-1.5 h-1.5 rounded-full bg-quicksite-blue ml-1.5 animate-pulse"></div>
+    <Sidebar defaultCollapsed={isMobile} className="border-r bg-white/80 backdrop-blur-md">
+      <SidebarContent className="p-2">
+        <div className="flex items-center h-16 px-4">
+          <span className="text-xl font-bold text-gradient">quicksite</span>
+          <SidebarToggle className="ml-auto" />
         </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === '/'}>
-              <Link to="/">
-                <LayoutDashboard size={18} className="opacity-75" />
-                <span>Dashboard</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname.startsWith('/orders')}>
-              <Link to="/orders">
-                <Package size={18} className="opacity-75" />
-                <span>Orders</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === '/messages'}>
-              <Link to="/messages">
-                <MessageSquare size={18} className="opacity-75" />
-                <span>Messages</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
         
         <SidebarGroup>
-          <SidebarGroupLabel onClick={() => toggleGroup('site')}>
-            <span>Site Management</span>
-            <ChevronRight size={16} className={`transition-transform ${activeGroups.site ? 'rotate-90' : ''}`} />
-          </SidebarGroupLabel>
+          <Button
+            variant={isActive('/') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/')}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            Dashboard
+          </Button>
           
-          {activeGroups.site && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/site-performance'}>
-                    <Link to="/site-performance">
-                      <BarChart3 size={18} className="opacity-75" />
-                      <span>Performance</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/site-bugs'}>
-                    <Link to="/site-bugs">
-                      <Bug size={18} className="opacity-75" />
-                      <span>Bugs</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/feature-requests'}>
-                    <Link to="/feature-requests">
-                      <Lightbulb size={18} className="opacity-75" />
-                      <span>Feature Requests</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
+          <Button
+            variant={isActive('/orders') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/orders')}
+          >
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            Orders
+          </Button>
+          
+          <Button
+            variant={isActive('/profile') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/profile')}
+          >
+            <User className="mr-2 h-4 w-4" />
+            Profile
+          </Button>
+          
+          <Button
+            variant={isActive('/messages') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/messages')}
+          >
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Messages
+          </Button>
         </SidebarGroup>
         
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === '/support'}>
-              <Link to="/support">
-                <Headphones size={18} className="opacity-75" />
-                <span>Support</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+        <SidebarGroup title="Support">
+          <Button
+            variant={isActive('/support') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/support')}
+          >
+            <HelpCircle className="mr-2 h-4 w-4" />
+            Help Center
+          </Button>
           
-          {isAdmin && (
-            <>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/data-management'}>
-                  <Link to="/data-management">
-                    <Database size={18} className="opacity-75" />
-                    <span>Data Management</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location.pathname === '/customer-management'}>
-                  <Link to="/customer-management">
-                    <Users size={18} className="opacity-75" />
-                    <span>Customer Management</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </>
-          )}
+          <Button
+            variant={isActive('/site-performance') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/site-performance')}
+          >
+            <BarChart2 className="mr-2 h-4 w-4" />
+            Site Performance
+          </Button>
           
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={location.pathname === '/settings'}>
-              <Link to="/settings">
-                <Settings size={18} className="opacity-75" />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+          <Button
+            variant={isActive('/site-bugs') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/site-bugs')}
+          >
+            <Bug className="mr-2 h-4 w-4" />
+            Report Bugs
+          </Button>
+          
+          <Button
+            variant={isActive('/feature-requests') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/feature-requests')}
+          >
+            <Lightbulb className="mr-2 h-4 w-4" />
+            Feature Requests
+          </Button>
+        </SidebarGroup>
+        
+        {userType === 'admin' && (
+          <SidebarGroup title="Administration">
+            <Button
+              variant={isActive('/data-management') ? 'secondary' : 'ghost'}
+              className="w-full justify-start mb-1"
+              onClick={() => navigate('/data-management')}
+            >
+              <Database className="mr-2 h-4 w-4" />
+              Data Management
+            </Button>
+            
+            <Button
+              variant={isActive('/customer-management') ? 'secondary' : 'ghost'}
+              className="w-full justify-start mb-1"
+              onClick={() => navigate('/customer-management')}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Customer Management
+            </Button>
+          </SidebarGroup>
+        )}
+        
+        <SidebarGroup title="Account">
+          <Button
+            variant={isActive('/settings') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/settings')}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 mb-1"
+            onClick={handleLogout}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2 h-4 w-4"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Logout
+          </Button>
+        </SidebarGroup>
       </SidebarContent>
+      
+      <SidebarFooter className="p-2">
+        <div className="flex items-center gap-2 px-2">
+          <div className="rounded-full w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-500 flex items-center justify-center text-white font-semibold">
+            {userType === 'admin' ? 'A' : 'C'}
+          </div>
+          <div className="text-xs">
+            <p className="font-medium">{userType === 'admin' ? 'Admin' : 'Customer'}</p>
+            <p className="text-gray-500">v1.0.0</p>
+          </div>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 };

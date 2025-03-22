@@ -42,13 +42,14 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [assignedTo, setAssignedTo] = useState<string>('');
 
+  // Update status options to match allowed types
   const statusOptions: ProjectStatus[] = [
-    { id: 'planning', label: 'Planning', color: 'gray' },
+    { id: 'planning', label: 'Planning', color: 'pending' },
     { id: 'inProgress', label: 'In Progress', color: 'blue' },
-    { id: 'review', label: 'In Review', color: 'yellow' },
-    { id: 'completed', label: 'Completed', color: 'green' },
-    { id: 'delayed', label: 'Delayed', color: 'orange' },
-    { id: 'canceled', label: 'Canceled', color: 'red' }
+    { id: 'review', label: 'In Review', color: 'warning' },
+    { id: 'completed', label: 'Completed', color: 'success' },
+    { id: 'delayed', label: 'Delayed', color: 'warning' },
+    { id: 'canceled', label: 'Canceled', color: 'error' }
   ];
 
   const handleUpdateOrder = () => {
@@ -105,9 +106,9 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
                   <Badge variant="outline">{order.package.name}</Badge>
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={order.status.id} />
                 </TableCell>
-                <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
+                <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Dialog>
@@ -118,7 +119,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
                           onClick={() => {
                             setEditingOrder(order);
                             setSelectedStatus(order.status.id);
-                            setAssignedTo(order.assignedTo || '');
+                            setAssignedTo(order.assignee || '');
                           }}
                         >
                           <FileEdit size={14} className="mr-1" />
