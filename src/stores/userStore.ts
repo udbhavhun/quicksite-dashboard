@@ -9,7 +9,7 @@ interface Profile {
   name: string;
   role: 'customer' | 'admin';
   avatar?: string;
-  // Optional properties that might not exist in all profiles
+  // Added optional properties for the profile
   company?: string;
   phone?: string;
 }
@@ -87,7 +87,7 @@ export const useUserStore = create<UserState>((set, get) => ({
             name: profileData?.name || '',
             role: (profileData?.role as 'customer' | 'admin') || 'customer',
             avatar: profileData?.avatar_url,
-            // Optional properties may not exist in all profiles
+            // Optional properties with safe access
             company: profileData?.company,
             phone: profileData?.phone,
           },

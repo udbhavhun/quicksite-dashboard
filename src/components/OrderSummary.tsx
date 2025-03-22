@@ -37,7 +37,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ orders = [], order }) => {
   }
 
   // Ensure orders is an array before filtering
-  if (!Array.isArray(orders)) {
+  if (!Array.isArray(orders) || orders.length === 0) {
     // Return a fallback UI when orders is not available
     return (
       <Card className="glass-card">

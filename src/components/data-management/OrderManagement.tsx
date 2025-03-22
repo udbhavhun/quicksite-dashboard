@@ -1,206 +1,165 @@
 
 import React, { useState } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Trash, FileEdit } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import StatusBadge from '@/components/StatusBadge';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Order, ProjectStatus } from '@/lib/data';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Input } from "@/components/ui/input";
 import { toast } from '@/hooks/use-toast';
+import { Search } from 'lucide-react';
+
+// Define the allowed status colors that match the StatusBadge component
+type StatusColor = "error" | "pending" | "blue" | "success" | "warning";
+
+// Helper function to safely convert a status string to its matching color
+const getStatusColor = (status: string): StatusColor => {
+  switch(status.toLowerCase()) {
+    case 'canceled':
+    case 'rejected':
+      return "error";
+    case 'pending':
+    case 'not-started':
+      return "pending";
+    case 'approved':
+    case 'in-progress':
+    case 'review':
+      return "blue";
+    case 'completed':
+    case 'live':
+      return "success";
+    case 'delayed':
+    case 'testing':
+      return "warning";
+    default:
+      return "pending";
+  }
+};
+
+// Helper function to safely get status ID
+const getStatusId = (status: ProjectStatus | string | undefined): string => {
+  if (!status) return '';
+  
+  if (typeof status === 'object' && status.id) {
+    return status.id;
+  }
+  
+  return String(status);
+};
 
 interface OrderManagementProps {
   orders: Order[];
-  onUpdate: (orderId: string, status: ProjectStatus, assignedTo?: string) => void;
-  onDelete: (orderId: string) => void;
-  setItemToDelete: (item: {id: string, type: string} | null) => void;
 }
 
-const OrderManagement: React.FC<OrderManagementProps> = ({ 
-  orders, 
-  onUpdate,
-  onDelete,
-  setItemToDelete
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [assignedTo, setAssignedTo] = useState<string>('');
+const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
 
-  // Update status options to match allowed types
-  const statusOptions: ProjectStatus[] = [
-    { id: 'planning', label: 'Planning', color: 'pending' },
-    { id: 'in-progress', label: 'In Progress', color: 'blue' },
-    { id: 'review', label: 'In Review', color: 'warning' },
-    { id: 'completed', label: 'Completed', color: 'success' },
-    { id: 'delayed', label: 'Delayed', color: 'warning' },
-    { id: 'cancelled', label: 'Cancelled', color: 'error' }
-  ];
-
-  const handleUpdateOrder = () => {
-    if (editingOrder && selectedStatus) {
-      const status = statusOptions.find(option => option.id === selectedStatus);
-      if (status) {
-        onUpdate(editingOrder.id, status, assignedTo || undefined);
-        setEditingOrder(null);
-        setSelectedStatus('');
-        setAssignedTo('');
-        toast({
-          title: "Order updated",
-          description: `Order #${editingOrder.id} has been updated.`
-        });
-      }
+  React.useEffect(() => {
+    if (!orders) {
+      setFilteredOrders([]);
+      return;
     }
+    
+    if (searchQuery.trim() === '') {
+      setFilteredOrders(orders);
+    } else {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      const filtered = orders.filter(order => 
+        order.id.toLowerCase().includes(lowerCaseQuery) ||
+        order.customer.name.toLowerCase().includes(lowerCaseQuery) ||
+        order.package.name.toLowerCase().includes(lowerCaseQuery) ||
+        getStatusId(order.status).toLowerCase().includes(lowerCaseQuery)
+      );
+      setFilteredOrders(filtered);
+    }
+  }, [searchQuery, orders]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  const filteredOrders = orders.filter(order => 
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.package.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleEdit = (id: string) => {
+    toast({
+      title: "Edit Order",
+      description: `Edit order with ID: ${id}`,
+    });
+  };
 
-  const getStatusId = (order: Order): "completed" | "in-progress" | "pending" | "not-started" | "live" | "review" | "delayed" | "testing" | "approved" | "rejected" => {
-    // Convert order status to one of the expected types
-    if (order.status && order.status.id) {
-      const statusId = order.status.id;
-      if (["completed", "in-progress", "pending", "not-started", "live", "review", "delayed", "testing", "approved", "rejected"].includes(statusId)) {
-        return statusId as any;
-      }
-    }
-    // Default fallback
-    return "pending";
+  const handleDelete = (id: string) => {
+    toast({
+      title: "Delete Order",
+      description: `Delete order with ID: ${id}`,
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder="Search orders..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-xs"
-        />
-      </div>
-
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Package</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredOrders.map((order) => (
-              <TableRow key={order.id} className="group">
-                <TableCell>{order.id}</TableCell>
-                <TableCell>{order.customer.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{order.package.name}</Badge>
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={getStatusId(order)} />
-                </TableCell>
-                <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            setEditingOrder(order);
-                            setSelectedStatus(order.status?.id || 'pending');
-                            setAssignedTo(order.assignee || '');
-                          }}
-                        >
-                          <FileEdit size={14} className="mr-1" />
-                          Edit
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Edit Order {editingOrder?.id}</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <label htmlFor="status" className="text-right text-sm font-medium">
-                              Status
-                            </label>
-                            <Select 
-                              value={selectedStatus} 
-                              onValueChange={setSelectedStatus}
-                            >
-                              <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {statusOptions.map((status) => (
-                                  <SelectItem key={status.id} value={status.id}>
-                                    {status.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <label htmlFor="assignedTo" className="text-right text-sm font-medium">
-                              Assigned To
-                            </label>
-                            <Input
-                              id="assignedTo"
-                              value={assignedTo}
-                              onChange={(e) => setAssignedTo(e.target.value)}
-                              className="col-span-3"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                          </DialogClose>
-                          <DialogClose asChild>
-                            <Button onClick={handleUpdateOrder}>Save Changes</Button>
-                          </DialogClose>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={() => setItemToDelete({ id: order.id, type: 'order' })}
-                    >
-                      <Trash size={14} className="mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <Card className="shadow-md">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Orders</span>
+          <div className="relative w-64">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search orders..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left py-3 px-4">ID</th>
+                <th className="text-left py-3 px-4">Customer</th>
+                <th className="text-left py-3 px-4">Package</th>
+                <th className="text-left py-3 px-4">Status</th>
+                <th className="text-left py-3 px-4">Date</th>
+                <th className="text-left py-3 px-4">Price</th>
+                <th className="text-right py-3 px-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders && filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => (
+                  <tr key={order.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4">{order.id}</td>
+                    <td className="py-3 px-4">{order.customer.name}</td>
+                    <td className="py-3 px-4">{order.package.name}</td>
+                    <td className="py-3 px-4">
+                      <Badge variant={getStatusColor(getStatusId(order.status))}>
+                        {getStatusId(order.status)}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4">
+                      {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="py-3 px-4">${order.package.price.toFixed(2)}</td>
+                    <td className="py-3 px-4 text-right">
+                      <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(order.id)}>
+                        Edit
+                      </Button>
+                      <Button variant="destructive" size="sm" onClick={() => handleDelete(order.id)}>
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-gray-500">
+                    No orders found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

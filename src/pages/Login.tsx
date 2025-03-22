@@ -1,74 +1,61 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useUserStore } from '@/stores/userStore';
-import { toast } from '@/hooks/use-toast';
-import { User, Lock, ArrowRight, AlertCircle, Info } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserStore } from "@/stores/userStore";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
-  // Login state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  
-  // Signup state
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
-  const [signupName, setSignupName] = useState('');
-  const [isSignupLoading, setIsSignupLoading] = useState(false);
-  
   const navigate = useNavigate();
-  const { isAuthenticated, login } = useUserStore();
+  const { login, signup, error: storeError, clearError } = useUserStore();
   
-  // Redirect if already logged in
-  useEffect(() => {
-    console.log("isAuthenticated:", isAuthenticated);
-    if (isAuthenticated) {
-      console.log("User is authenticated, redirecting to /");
-      navigate('/');
+  const [formData, setFormData] = React.useState({
+    email: "",
+    password: "",
+    name: "",
+  });
+  
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState("login");
+  
+  // Clear any existing auth errors when component mounts or tab changes
+  React.useEffect(() => {
+    clearError();
+  }, [activeTab, clearError]);
+  
+  // Show error toast if store has an error
+  React.useEffect(() => {
+    if (storeError) {
+      toast({
+        title: "Authentication Error",
+        description: storeError,
+        variant: "destructive",
+      });
     }
-  }, [isAuthenticated, navigate]);
+  }, [storeError]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setAuthError(null);
     
     try {
-      console.log("Attempting login with:", email, password);
-      const success = await login(email, password);
-      
-      console.log("Login success:", success);
-      
-      if (success) {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        navigate('/');
-      } else {
-        setAuthError("Invalid email or password. Please try again.");
-        toast({
-          title: "Login failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive"
-        });
-      }
+      await login(formData.email, formData.password);
+      navigate("/");
     } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Login failed:", error);
+      // Error will be handled by the userStore and shown via toast
     } finally {
       setIsLoading(false);
     }
@@ -76,260 +63,148 @@ const Login = () => {
   
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSignupLoading(true);
-    setAuthError(null);
-    
-    // Validate password match
-    if (signupPassword !== signupConfirmPassword) {
-      setAuthError("Passwords do not match");
-      toast({
-        title: "Signup failed",
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      setIsSignupLoading(false);
-      return;
-    }
+    setIsLoading(true);
     
     try {
-      console.log("Attempting signup with:", signupEmail, signupPassword, signupName);
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: signupEmail,
-        password: signupPassword,
-        options: {
-          data: {
-            name: signupName,
-          }
-        }
-      });
-      
-      console.log("Signup response:", data, error);
-      
-      if (error) {
-        setAuthError(error.message);
-        toast({
-          title: "Signup failed",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else if (data.user) {
-        // Create a profile for the new user
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            name: signupName,
-            email: signupEmail,
-            role: 'customer',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-          
-        if (profileError) {
-          console.error("Profile creation error:", profileError);
-          toast({
-            title: "Profile creation failed",
-            description: "Your account was created but we couldn't set up your profile.",
-            variant: "destructive"
-          });
-        }
-        
-        toast({
-          title: "Signup successful",
-          description: "Your account has been created successfully. You can now log in.",
-        });
-        
-        // Clear signup form
-        setSignupEmail('');
-        setSignupPassword('');
-        setSignupConfirmPassword('');
-        setSignupName('');
-      }
+      await signup(formData.email, formData.password, formData.name);
+      navigate("/");
     } catch (error) {
-      console.error("Signup error:", error);
-      toast({
-        title: "Signup error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Signup failed:", error);
+      // Error will be handled by the userStore and shown via toast
     } finally {
-      setIsSignupLoading(false);
+      setIsLoading(false);
+    }
+  };
+  
+  const setDemoLogin = (type: 'admin' | 'customer') => {
+    if (type === 'admin') {
+      setFormData({
+        email: "admin@example.com",
+        password: "admin123",
+        name: "",
+      });
+    } else {
+      setFormData({
+        email: "customer@example.com",
+        password: "customer123",
+        name: "",
+      });
     }
   };
   
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white to-gray-100">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gradient mb-2">quicksite</h1>
-          <p className="text-gray-600">Sign in to your dashboard</p>
-        </div>
-        
-        <div className="glass-card p-8 shadow-xl">
-          {authError && (
-            <Alert className="mb-6 bg-red-50 border-red-200">
-              <AlertCircle className="h-4 w-4 text-red-500" />
-              <AlertDescription className="text-red-700 text-sm">
-                {authError}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <Alert className="mb-6 bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertDescription className="text-blue-700 text-sm">
-              <strong>Admin login:</strong> admin@example.com / admin123<br />
-              <strong>Customer:</strong> Create via signup or use customer@example.com / customer123
-            </AlertDescription>
-          </Alert>
-          
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User size={16} className="text-gray-400" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="w-full max-w-md">
+        <Card className="glass-card w-full">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center text-gradient">
+              QuickSite Management
+            </CardTitle>
+            <CardDescription className="text-center">
+              Log in to your account to access your dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      placeholder="name@example.com" 
+                      required 
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <a href="#" className="text-sm text-gray-500 hover:text-blue-600">
+                        Forgot password?
+                      </a>
                     </div>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      className="pl-10"
-                      required
+                    <Input 
+                      id="password" 
+                      name="password" 
+                      type="password" 
+                      required 
+                      value={formData.password}
+                      onChange={handleInputChange}
                     />
                   </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock size={16} className="text-gray-400" />
-                    </div>
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="pl-10"
-                      required
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Name</Label>
+                    <Input 
+                      id="signup-name" 
+                      name="name" 
+                      placeholder="John Doe" 
+                      required 
+                      value={formData.name}
+                      onChange={handleInputChange}
                     />
                   </div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-quicksite-blue focus:ring-quicksite-blue border-gray-300 rounded"
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input 
+                      id="signup-email" 
+                      name="email" 
+                      type="email" 
+                      placeholder="name@example.com" 
+                      required 
+                      value={formData.email}
+                      onChange={handleInputChange}
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                      Remember me
-                    </label>
                   </div>
-                  <div className="text-sm">
-                    <a href="#" className="text-quicksite-blue hover:text-quicksite-dark-blue">
-                      Forgot password?
-                    </a>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input 
+                      id="signup-password" 
+                      name="password" 
+                      type="password" 
+                      required 
+                      value={formData.password}
+                      onChange={handleInputChange}
+                    />
                   </div>
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full bg-quicksite-blue hover:bg-quicksite-dark-blue text-white flex items-center justify-center micro-bounce"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <User size={16} className="mr-2" />
-                  )}
-                  Sign in
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <Input
-                    type="text"
-                    value={signupName}
-                    onChange={(e) => setSignupName(e.target.value)}
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <Input
-                    type="email"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                  <Input
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                  <Input
-                    type="password"
-                    value={signupConfirmPassword}
-                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                
-                <Button
-                  type="submit"
-                  className="w-full bg-quicksite-blue hover:bg-quicksite-dark-blue text-white flex items-center justify-center micro-bounce"
-                  disabled={isSignupLoading}
-                >
-                  {isSignupLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  ) : (
-                    <ArrowRight size={16} className="mr-2" />
-                  )}
-                  Create Account
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </motion.div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Creating Account..." : "Create Account"}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <div className="text-sm text-center text-gray-500">
+              Demo Accounts
+            </div>
+            <div className="flex gap-2 w-full">
+              <Button variant="outline" className="flex-1" onClick={() => setDemoLogin('admin')}>
+                Admin Demo
+              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setDemoLogin('customer')}>
+                Customer Demo
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };
