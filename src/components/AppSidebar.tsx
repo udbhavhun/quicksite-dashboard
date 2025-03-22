@@ -16,13 +16,14 @@ import {
 } from 'lucide-react';
 import { 
   Sidebar, 
-  SidebarInner, 
+  SidebarContent, 
   SidebarHeader, 
-  SidebarBody, 
-  SidebarLink, 
-  SidebarGroup, 
-  SidebarGroupLabel, 
-  SidebarGroupToggle 
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent
 } from '@/components/ui/sidebar';
 import { useUserStore } from '@/stores/userStore';
 
@@ -55,79 +56,124 @@ const AppSidebar = () => {
   
   return (
     <Sidebar>
-      <SidebarInner className="border-r bg-white/95 backdrop-blur-sm">
-        <SidebarHeader>
-          <div className="flex items-center px-6 py-5">
-            <Link to="/" className="text-2xl font-bold text-gradient">quicksite</Link>
-            <div className="w-1.5 h-1.5 rounded-full bg-quicksite-blue ml-1.5 animate-pulse"></div>
-          </div>
-        </SidebarHeader>
-        <SidebarBody>
-          <SidebarLink to="/" active={location.pathname === '/'}>
-            <LayoutDashboard size={18} className="opacity-75" />
-            <span>Dashboard</span>
-          </SidebarLink>
-          <SidebarLink to="/orders" active={location.pathname.startsWith('/orders')}>
-            <Package size={18} className="opacity-75" />
-            <span>Orders</span>
-          </SidebarLink>
-          <SidebarLink to="/messages" active={location.pathname === '/messages'}>
-            <MessageSquare size={18} className="opacity-75" />
-            <span>Messages</span>
-          </SidebarLink>
+      <SidebarHeader>
+        <div className="flex items-center px-6 py-5">
+          <Link to="/" className="text-2xl font-bold text-gradient">quicksite</Link>
+          <div className="w-1.5 h-1.5 rounded-full bg-quicksite-blue ml-1.5 animate-pulse"></div>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname === '/'}>
+              <Link to="/">
+                <LayoutDashboard size={18} className="opacity-75" />
+                <span>Dashboard</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
-          <SidebarGroup>
-            <SidebarGroupToggle 
-              open={activeGroups.site} 
-              onClick={() => toggleGroup('site')}
-            >
-              <SidebarGroupLabel>
-                <span>Site Management</span>
-                <ChevronRight size={16} className={`transition-transform ${activeGroups.site ? 'rotate-90' : ''}`} />
-              </SidebarGroupLabel>
-            </SidebarGroupToggle>
-            {activeGroups.site && (
-              <>
-                <SidebarLink to="/site-performance" active={location.pathname === '/site-performance'} nested>
-                  <BarChart3 size={18} className="opacity-75" />
-                  <span>Performance</span>
-                </SidebarLink>
-                <SidebarLink to="/site-bugs" active={location.pathname === '/site-bugs'} nested>
-                  <Bug size={18} className="opacity-75" />
-                  <span>Bugs</span>
-                </SidebarLink>
-                <SidebarLink to="/feature-requests" active={location.pathname === '/feature-requests'} nested>
-                  <Lightbulb size={18} className="opacity-75" />
-                  <span>Feature Requests</span>
-                </SidebarLink>
-              </>
-            )}
-          </SidebarGroup>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname.startsWith('/orders')}>
+              <Link to="/orders">
+                <Package size={18} className="opacity-75" />
+                <span>Orders</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
-          <SidebarLink to="/support" active={location.pathname === '/support'}>
-            <Headphones size={18} className="opacity-75" />
-            <span>Support</span>
-          </SidebarLink>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname === '/messages'}>
+              <Link to="/messages">
+                <MessageSquare size={18} className="opacity-75" />
+                <span>Messages</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        
+        <SidebarGroup>
+          <SidebarGroupLabel onClick={() => toggleGroup('site')}>
+            <span>Site Management</span>
+            <ChevronRight size={16} className={`transition-transform ${activeGroups.site ? 'rotate-90' : ''}`} />
+          </SidebarGroupLabel>
+          
+          {activeGroups.site && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/site-performance'}>
+                    <Link to="/site-performance">
+                      <BarChart3 size={18} className="opacity-75" />
+                      <span>Performance</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/site-bugs'}>
+                    <Link to="/site-bugs">
+                      <Bug size={18} className="opacity-75" />
+                      <span>Bugs</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/feature-requests'}>
+                    <Link to="/feature-requests">
+                      <Lightbulb size={18} className="opacity-75" />
+                      <span>Feature Requests</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          )}
+        </SidebarGroup>
+        
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname === '/support'}>
+              <Link to="/support">
+                <Headphones size={18} className="opacity-75" />
+                <span>Support</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           
           {isAdmin && (
             <>
-              <SidebarLink to="/data-management" active={location.pathname === '/data-management'}>
-                <Database size={18} className="opacity-75" />
-                <span>Data Management</span>
-              </SidebarLink>
-              <SidebarLink to="/customer-management" active={location.pathname === '/customer-management'}>
-                <Users size={18} className="opacity-75" />
-                <span>Customer Management</span>
-              </SidebarLink>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/data-management'}>
+                  <Link to="/data-management">
+                    <Database size={18} className="opacity-75" />
+                    <span>Data Management</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/customer-management'}>
+                  <Link to="/customer-management">
+                    <Users size={18} className="opacity-75" />
+                    <span>Customer Management</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </>
           )}
           
-          <SidebarLink to="/settings" active={location.pathname === '/settings'}>
-            <Settings size={18} className="opacity-75" />
-            <span>Settings</span>
-          </SidebarLink>
-        </SidebarBody>
-      </SidebarInner>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={location.pathname === '/settings'}>
+              <Link to="/settings">
+                <Settings size={18} className="opacity-75" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarContent>
     </Sidebar>
   );
 };

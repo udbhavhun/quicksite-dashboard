@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -42,19 +41,15 @@ const Orders = () => {
   const [isLoading, setIsLoading] = useState(true);
   const ordersPerPage = 10;
   
-  // Fetch orders based on user role
   useEffect(() => {
     const fetchOrders = async () => {
       setIsLoading(true);
       
       try {
         if (profile?.role === 'admin') {
-          // Admins see all orders
           setOrders(ORDERS);
         } else {
-          // Customers see only their own orders
           const customerOrders = ORDERS.filter(order => 
-            order.customer.id === profile?.id || 
             order.customer.email === profile?.email
           );
           setOrders(customerOrders);
@@ -83,7 +78,6 @@ const Orders = () => {
     }
   };
   
-  // Filter and sort orders
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,7 +92,6 @@ const Orders = () => {
     return matchesSearch && matchesStatus;
   });
   
-  // Sort orders
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (!sortField) return 0;
     
@@ -134,7 +127,6 @@ const Orders = () => {
     return sortDirection === 'asc' ? comparison : -comparison;
   });
   
-  // Pagination
   const totalPages = Math.ceil(sortedOrders.length / ordersPerPage);
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -145,7 +137,6 @@ const Orders = () => {
   };
   
   const handleEditOrder = (orderId: string) => {
-    // Only admins can edit orders
     if (profile?.role === 'admin') {
       navigate(`/orders/${orderId}?edit=true`);
     } else {
@@ -158,9 +149,7 @@ const Orders = () => {
   };
   
   const handleDeleteOrder = (orderId: string) => {
-    // Only admins can delete orders
     if (profile?.role === 'admin') {
-      // In a real app, this would be an API call
       toast({
         title: "Order deleted",
         description: `Order ${orderId} has been deleted successfully.`,
@@ -175,7 +164,6 @@ const Orders = () => {
   };
   
   const handleCreateOrder = () => {
-    // Only admins can create orders
     if (profile?.role === 'admin') {
       toast({
         title: "Feature coming soon",

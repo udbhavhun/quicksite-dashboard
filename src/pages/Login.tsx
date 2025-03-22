@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/stores/userStore';
 import { toast } from '@/hooks/use-toast';
-import { User, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Lock, ArrowRight, AlertCircle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,7 +30,9 @@ const Login = () => {
   
   // Redirect if already logged in
   useEffect(() => {
+    console.log("isAuthenticated:", isAuthenticated);
     if (isAuthenticated) {
+      console.log("User is authenticated, redirecting to /");
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
@@ -41,7 +43,10 @@ const Login = () => {
     setAuthError(null);
     
     try {
+      console.log("Attempting login with:", email, password);
       const success = await login(email, password);
+      
+      console.log("Login success:", success);
       
       if (success) {
         toast({
@@ -87,6 +92,8 @@ const Login = () => {
     }
     
     try {
+      console.log("Attempting signup with:", signupEmail, signupPassword, signupName);
+      
       const { data, error } = await supabase.auth.signUp({
         email: signupEmail,
         password: signupPassword,
@@ -97,6 +104,8 @@ const Login = () => {
         }
       });
       
+      console.log("Signup response:", data, error);
+      
       if (error) {
         setAuthError(error.message);
         toast({
@@ -105,6 +114,27 @@ const Login = () => {
           variant: "destructive"
         });
       } else if (data.user) {
+        // Create a profile for the new user
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            name: signupName,
+            email: signupEmail,
+            role: 'customer',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          toast({
+            title: "Profile creation failed",
+            description: "Your account was created but we couldn't set up your profile.",
+            variant: "destructive"
+          });
+        }
+        
         toast({
           title: "Signup successful",
           description: "Your account has been created successfully. You can now log in.",
@@ -150,6 +180,14 @@ const Login = () => {
               </AlertDescription>
             </Alert>
           )}
+          
+          <Alert className="mb-6 bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-blue-700 text-sm">
+              <strong>Admin login:</strong> admin@example.com / admin123<br />
+              <strong>Customer:</strong> Create via signup or use customer@example.com / customer123
+            </AlertDescription>
+          </Alert>
           
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
