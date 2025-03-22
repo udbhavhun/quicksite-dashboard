@@ -18,8 +18,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Check if this order belongs to the current user
-  const isUserOrder = profile?.id === order.customer.id || profile?.email === order.customer.email;
+  // Check if this order belongs to the current user - using email for comparison
+  const isUserOrder = profile?.email === order.customer.email;
   
   // Only admins or the order owner can view the order details
   if (!isAdmin && !isUserOrder) {
