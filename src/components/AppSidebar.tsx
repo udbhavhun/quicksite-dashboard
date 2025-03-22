@@ -21,16 +21,16 @@ import {
   SidebarInset,
   SidebarGroup,
   SidebarFooter,
-  SidebarToggle
+  SidebarTrigger
 } from '@/components/ui/sidebar';
 import { useUserStore } from '@/stores/userStore';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AppSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useMobile();
-  const { userType, logout } = useUserStore();
+  const isMobile = useIsMobile();
+  const { profile, logout } = useUserStore();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -40,11 +40,11 @@ const AppSidebar = () => {
   };
   
   return (
-    <Sidebar defaultCollapsed={isMobile} className="border-r bg-white/80 backdrop-blur-md">
+    <Sidebar className="border-r bg-white/80 backdrop-blur-md">
       <SidebarContent className="p-2">
         <div className="flex items-center h-16 px-4">
           <span className="text-xl font-bold text-gradient">quicksite</span>
-          <SidebarToggle className="ml-auto" />
+          <SidebarTrigger className="ml-auto" />
         </div>
         
         <SidebarGroup>
@@ -123,7 +123,7 @@ const AppSidebar = () => {
           </Button>
         </SidebarGroup>
         
-        {userType === 'admin' && (
+        {profile?.role === 'admin' && (
           <SidebarGroup title="Administration">
             <Button
               variant={isActive('/data-management') ? 'secondary' : 'ghost'}
@@ -182,10 +182,10 @@ const AppSidebar = () => {
       <SidebarFooter className="p-2">
         <div className="flex items-center gap-2 px-2">
           <div className="rounded-full w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-500 flex items-center justify-center text-white font-semibold">
-            {userType === 'admin' ? 'A' : 'C'}
+            {profile?.role === 'admin' ? 'A' : 'C'}
           </div>
           <div className="text-xs">
-            <p className="font-medium">{userType === 'admin' ? 'Admin' : 'Customer'}</p>
+            <p className="font-medium">{profile?.role === 'admin' ? 'Admin' : 'Customer'}</p>
             <p className="text-gray-500">v1.0.0</p>
           </div>
         </div>

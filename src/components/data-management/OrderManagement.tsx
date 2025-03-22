@@ -45,11 +45,11 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
   // Update status options to match allowed types
   const statusOptions: ProjectStatus[] = [
     { id: 'planning', label: 'Planning', color: 'pending' },
-    { id: 'inProgress', label: 'In Progress', color: 'blue' },
+    { id: 'in-progress', label: 'In Progress', color: 'blue' },
     { id: 'review', label: 'In Review', color: 'warning' },
     { id: 'completed', label: 'Completed', color: 'success' },
     { id: 'delayed', label: 'Delayed', color: 'warning' },
-    { id: 'canceled', label: 'Canceled', color: 'error' }
+    { id: 'cancelled', label: 'Cancelled', color: 'error' }
   ];
 
   const handleUpdateOrder = () => {
@@ -73,6 +73,18 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
     order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.package.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getStatusId = (order: Order): "completed" | "in-progress" | "pending" | "not-started" | "live" | "review" | "delayed" | "testing" | "approved" | "rejected" => {
+    // Convert order status to one of the expected types
+    if (order.status && order.status.id) {
+      const statusId = order.status.id;
+      if (["completed", "in-progress", "pending", "not-started", "live", "review", "delayed", "testing", "approved", "rejected"].includes(statusId)) {
+        return statusId as any;
+      }
+    }
+    // Default fallback
+    return "pending";
+  };
 
   return (
     <div className="space-y-6">
@@ -106,7 +118,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
                   <Badge variant="outline">{order.package.name}</Badge>
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={order.status.id} />
+                  <StatusBadge status={getStatusId(order)} />
                 </TableCell>
                 <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
                 <TableCell>
@@ -118,7 +130,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({
                           variant="outline"
                           onClick={() => {
                             setEditingOrder(order);
-                            setSelectedStatus(order.status.id);
+                            setSelectedStatus(order.status?.id || 'pending');
                             setAssignedTo(order.assignee || '');
                           }}
                         >

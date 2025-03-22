@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserStore } from '@/stores/userStore';
 import { Order } from '@/lib/data';
 
@@ -36,10 +36,25 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ orders = [], order }) => {
     );
   }
 
+  // Ensure orders is an array before filtering
+  if (!Array.isArray(orders)) {
+    // Return a fallback UI when orders is not available
+    return (
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Order Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No order data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Filter orders based on user role
-  const ordersForCustomer = orders.filter(order => 
-    isAdmin || (order.customer.email === profile?.email)
-  );
+  const ordersForCustomer = isAdmin 
+    ? orders 
+    : orders.filter(order => order.customer.email === profile?.email);
 
   // Calculate total orders
   const totalOrders = ordersForCustomer.length;
