@@ -13,8 +13,9 @@ interface EditableItemProps {
   fields: Array<{
     name: string;
     label: string;
-    type: 'text' | 'textarea' | 'url' | 'select';
+    type: 'text' | 'textarea' | 'url' | 'select' | 'email';
     options?: string[];
+    required?: boolean;
   }>;
   onSave: (updatedItem: Record<string, any>) => void;
   entityType: string;
@@ -37,7 +38,7 @@ const EditableItem: React.FC<EditableItemProps> = ({
   const handleSave = async () => {
     // Validate that we're not saving empty values for required fields
     const invalidFields = fields
-      .filter(field => field.type !== 'select' && !field.options) // Skip validation for select fields
+      .filter(field => field.required !== false) // Skip validation for optional fields
       .filter(field => !editedItem[field.name]);
     
     if (invalidFields.length > 0) {
@@ -61,14 +62,18 @@ const EditableItem: React.FC<EditableItemProps> = ({
     
     // Log each change to admin_edits table
     if (profile) {
-      for (const field of changedFields) {
-        await logAdminEdit(
-          entityType,
-          item.id,
-          field.name,
-          String(item[field.name] || ''),
-          String(editedItem[field.name] || '')
-        );
+      try {
+        for (const field of changedFields) {
+          await logAdminEdit(
+            entityType,
+            item.id || 'unknown',
+            field.name,
+            String(item[field.name] || ''),
+            String(editedItem[field.name] || '')
+          );
+        }
+      } catch (error) {
+        console.error("Error logging admin edit:", error);
       }
     }
     
@@ -111,12 +116,14 @@ const EditableItem: React.FC<EditableItemProps> = ({
               value={editedItem[field.name] || ''}
               onChange={(e) => handleChange(field.name, e.target.value)}
               className="min-h-[100px]"
+              required={field.required !== false}
             />
           ) : field.type === 'select' && field.options ? (
             <select
               value={editedItem[field.name] || ''}
               onChange={(e) => handleChange(field.name, e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2"
+              required={field.required !== false}
             >
               {field.options.map(option => (
                 <option key={option} value={option}>{option}</option>
@@ -127,6 +134,7 @@ const EditableItem: React.FC<EditableItemProps> = ({
               type={field.type}
               value={editedItem[field.name] || ''}
               onChange={(e) => handleChange(field.name, e.target.value)}
+              required={field.required !== false}
             />
           )}
         </div>

@@ -1,167 +1,133 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarHeader, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem
-} from "@/components/ui/sidebar";
+import React, { useEffect, useState } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  ShoppingBag, 
-  MessageSquare, 
-  HelpCircle, 
+  Package, 
   Settings, 
-  User, 
-  LogOut,
-  AlertTriangle,
-  ListTodo,
-  Activity,
-  Zap,
-  FileText,
-  Database
+  Headphones, 
+  BarChart3, 
+  Bug,
+  Lightbulb,
+  MessageSquare,
+  Database,
+  Users,
+  ChevronRight
 } from 'lucide-react';
+import { 
+  Sidebar, 
+  SidebarInner, 
+  SidebarHeader, 
+  SidebarBody, 
+  SidebarLink, 
+  SidebarGroup, 
+  SidebarGroupLabel, 
+  SidebarGroupToggle 
+} from '@/components/ui/sidebar';
 import { useUserStore } from '@/stores/userStore';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 const AppSidebar = () => {
   const location = useLocation();
-  const { userType, logout } = useUserStore();
-  const navigate = useNavigate();
+  const { profile } = useUserStore();
+  const [activeGroups, setActiveGroups] = useState<Record<string, boolean>>({
+    site: false,
+  });
   
-  const customerNavItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard, current: location.pathname === '/' },
-    { name: 'Orders', href: '/orders', icon: ShoppingBag, current: location.pathname.startsWith('/orders') },
-    { name: 'Messages', href: '/messages', icon: MessageSquare, current: location.pathname.startsWith('/messages') },
-    { name: 'Feature Requests', href: '/feature-requests', icon: ListTodo, current: location.pathname.startsWith('/feature-requests') },
-    { name: 'Site Performance', href: '/site-performance', icon: Activity, current: location.pathname.startsWith('/site-performance') },
-    { name: 'Support', href: '/support', icon: HelpCircle, current: location.pathname.startsWith('/support') },
-  ];
+  const isAdmin = profile?.role === 'admin';
   
-  const adminNavItems = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard, current: location.pathname === '/' },
-    { name: 'Orders', href: '/orders', icon: ShoppingBag, current: location.pathname.startsWith('/orders') },
-    { name: 'Messages', href: '/messages', icon: MessageSquare, current: location.pathname.startsWith('/messages') },
-    { name: 'Data Management', href: '/data-management', icon: Database, current: location.pathname.startsWith('/data-management') },
-    { name: 'Site Bugs', href: '/site-bugs', icon: AlertTriangle, current: location.pathname.startsWith('/site-bugs') },
-    { name: 'Site Performance', href: '/site-performance', icon: Activity, current: location.pathname.startsWith('/site-performance') },
-    { name: 'Feature Management', href: '/feature-requests', icon: ListTodo, current: location.pathname.startsWith('/feature-requests') },
-  ];
+  useEffect(() => {
+    // Auto-expand groups based on current path
+    const newActiveGroups = { ...activeGroups };
+    
+    if (location.pathname.includes('/site-')) {
+      newActiveGroups.site = true;
+    }
+    
+    setActiveGroups(newActiveGroups);
+  }, [location.pathname]);
   
-  const navItems = userType === 'admin' ? adminNavItems : customerNavItems;
-
-  const handleSignOut = () => {
-    logout();
-    navigate('/login');
+  const toggleGroup = (group: string) => {
+    setActiveGroups(prev => ({
+      ...prev,
+      [group]: !prev[group]
+    }));
   };
-
+  
   return (
     <Sidebar>
-      <SidebarHeader className="px-3 py-2">
-        <Link to="/" className="text-xl font-bold text-quicksite-blue flex items-center justify-center">
-          <motion.div 
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ 
-              duration: 1.5, 
-              repeat: Infinity, 
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }}
-            className="mr-2"
-          >
-            <Zap size={24} />
-          </motion.div>
-          quicksite
-        </Link>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item, index) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={item.current}
-                    tooltip={item.name}
-                  >
-                    <Link to={item.href} className="micro-bounce">
-                      <motion.div
-                        initial={{ x: -10, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.1, duration: 0.3 }}
-                      >
-                        <item.icon />
-                      </motion.div>
-                      <motion.span
-                        initial={{ x: -5, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.1 + 0.1, duration: 0.3 }}
-                      >
-                        {item.name}
-                      </motion.span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Profile">
-                  <Link to="/profile" className="micro-bounce">
-                    <User />
-                    <span>Profile</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Settings">
-                  <Link to="/settings" className="micro-bounce">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Documentation">
-                  <Link to="/support" className="micro-bounce">
-                    <FileText />
-                    <span>Documentation</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Sign out">
-              <button className="w-full text-left" onClick={handleSignOut}>
-                <LogOut />
-                <span>Sign out</span>
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarInner className="border-r bg-white/95 backdrop-blur-sm">
+        <SidebarHeader>
+          <div className="flex items-center px-6 py-5">
+            <Link to="/" className="text-2xl font-bold text-gradient">quicksite</Link>
+            <div className="w-1.5 h-1.5 rounded-full bg-quicksite-blue ml-1.5 animate-pulse"></div>
+          </div>
+        </SidebarHeader>
+        <SidebarBody>
+          <SidebarLink to="/" active={location.pathname === '/'}>
+            <LayoutDashboard size={18} className="opacity-75" />
+            <span>Dashboard</span>
+          </SidebarLink>
+          <SidebarLink to="/orders" active={location.pathname.startsWith('/orders')}>
+            <Package size={18} className="opacity-75" />
+            <span>Orders</span>
+          </SidebarLink>
+          <SidebarLink to="/messages" active={location.pathname === '/messages'}>
+            <MessageSquare size={18} className="opacity-75" />
+            <span>Messages</span>
+          </SidebarLink>
+          
+          <SidebarGroup>
+            <SidebarGroupToggle 
+              open={activeGroups.site} 
+              onClick={() => toggleGroup('site')}
+            >
+              <SidebarGroupLabel>
+                <span>Site Management</span>
+                <ChevronRight size={16} className={`transition-transform ${activeGroups.site ? 'rotate-90' : ''}`} />
+              </SidebarGroupLabel>
+            </SidebarGroupToggle>
+            {activeGroups.site && (
+              <>
+                <SidebarLink to="/site-performance" active={location.pathname === '/site-performance'} nested>
+                  <BarChart3 size={18} className="opacity-75" />
+                  <span>Performance</span>
+                </SidebarLink>
+                <SidebarLink to="/site-bugs" active={location.pathname === '/site-bugs'} nested>
+                  <Bug size={18} className="opacity-75" />
+                  <span>Bugs</span>
+                </SidebarLink>
+                <SidebarLink to="/feature-requests" active={location.pathname === '/feature-requests'} nested>
+                  <Lightbulb size={18} className="opacity-75" />
+                  <span>Feature Requests</span>
+                </SidebarLink>
+              </>
+            )}
+          </SidebarGroup>
+          
+          <SidebarLink to="/support" active={location.pathname === '/support'}>
+            <Headphones size={18} className="opacity-75" />
+            <span>Support</span>
+          </SidebarLink>
+          
+          {isAdmin && (
+            <>
+              <SidebarLink to="/data-management" active={location.pathname === '/data-management'}>
+                <Database size={18} className="opacity-75" />
+                <span>Data Management</span>
+              </SidebarLink>
+              <SidebarLink to="/customer-management" active={location.pathname === '/customer-management'}>
+                <Users size={18} className="opacity-75" />
+                <span>Customer Management</span>
+              </SidebarLink>
+            </>
+          )}
+          
+          <SidebarLink to="/settings" active={location.pathname === '/settings'}>
+            <Settings size={18} className="opacity-75" />
+            <span>Settings</span>
+          </SidebarLink>
+        </SidebarBody>
+      </SidebarInner>
     </Sidebar>
   );
 };

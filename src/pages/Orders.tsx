@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import StatusBadge from '@/components/StatusBadge';
@@ -25,17 +25,54 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useUserStore } from '@/stores/userStore';
+import { supabase } from '@/integrations/supabase/client';
 
 const Orders = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useUserStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const ordersPerPage = 10;
+  
+  // Fetch orders based on user role
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      
+      try {
+        if (profile?.role === 'admin') {
+          // Admins see all orders
+          setOrders(ORDERS);
+        } else {
+          // Customers see only their own orders
+          const customerOrders = ORDERS.filter(order => 
+            order.customer.id === profile?.id || 
+            order.customer.email === profile?.email
+          );
+          setOrders(customerOrders);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load orders. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, [profile]);
   
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -47,7 +84,7 @@ const Orders = () => {
   };
   
   // Filter and sort orders
-  const filteredOrders = ORDERS.filter(order => {
+  const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -108,23 +145,49 @@ const Orders = () => {
   };
   
   const handleEditOrder = (orderId: string) => {
-    navigate(`/orders/${orderId}?edit=true`);
+    // Only admins can edit orders
+    if (profile?.role === 'admin') {
+      navigate(`/orders/${orderId}?edit=true`);
+    } else {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit orders.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleDeleteOrder = (orderId: string) => {
-    // In a real app, this would be an API call
-    toast({
-      title: "Order deleted",
-      description: `Order ${orderId} has been deleted successfully.`,
-    });
+    // Only admins can delete orders
+    if (profile?.role === 'admin') {
+      // In a real app, this would be an API call
+      toast({
+        title: "Order deleted",
+        description: `Order ${orderId} has been deleted successfully.`,
+      });
+    } else {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to delete orders.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleCreateOrder = () => {
-    // In a real app, navigate to a new order form
-    toast({
-      title: "Feature coming soon",
-      description: "Creating new orders will be available in the next update.",
-    });
+    // Only admins can create orders
+    if (profile?.role === 'admin') {
+      toast({
+        title: "Feature coming soon",
+        description: "Creating new orders will be available in the next update.",
+      });
+    } else {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to create orders. Please contact support.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
@@ -134,13 +197,15 @@ const Orders = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Orders</h1>
-            <button
-              onClick={handleCreateOrder}
-              className="py-2 px-4 bg-quicksite-blue text-white rounded-lg hover:bg-quicksite-dark-blue transition-colors flex items-center"
-            >
-              <Plus size={16} className="mr-2" />
-              New Order
-            </button>
+            {profile?.role === 'admin' && (
+              <button
+                onClick={handleCreateOrder}
+                className="py-2 px-4 bg-quicksite-blue text-white rounded-lg hover:bg-quicksite-dark-blue transition-colors flex items-center"
+              >
+                <Plus size={16} className="mr-2" />
+                New Order
+              </button>
+            )}
           </div>
           
           <div className="bg-white rounded-2xl border border-gray-100 shadow-card overflow-hidden mb-6">
@@ -238,77 +303,89 @@ const Orders = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentOrders.map((order, index) => (
-                    <motion.tr
-                      key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="cursor-pointer hover:bg-gray-50"
-                    >
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        <span className="font-medium">{order.id}</span>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-24 text-center">
+                        <div className="flex justify-center">
+                          <div className="w-8 h-8 border-4 border-quicksite-blue border-t-transparent rounded-full animate-spin"></div>
+                        </div>
                       </TableCell>
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        {order.customer.name}
-                      </TableCell>
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        {order.package.name}
-                      </TableCell>
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        <StatusBadge 
-                          status={
-                            order.stages.every(s => s.status === 'completed') ? 'completed' :
-                            order.stages.some(s => s.status === 'in-progress') ? 'in-progress' :
-                            'pending'
-                          } 
-                          size="sm" 
-                        />
-                      </TableCell>
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        ₹{order.totalAmount.toLocaleString()}
-                      </TableCell>
-                      <TableCell onClick={() => handleViewOrder(order.id)}>
-                        {new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewOrder(order.id);
-                          }}
-                          className="text-gray-500 hover:text-quicksite-blue transition-colors p-1"
-                        >
-                          <FileText size={16} />
-                        </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditOrder(order.id);
-                          }}
-                          className="text-gray-500 hover:text-amber-500 transition-colors p-1"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteOrder(order.id);
-                          }}
-                          className="text-gray-500 hover:text-red-500 transition-colors p-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                  
-                  {currentOrders.length === 0 && (
+                    </TableRow>
+                  ) : currentOrders.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="h-24 text-center">
                         No orders found.
                       </TableCell>
                     </TableRow>
+                  ) : (
+                    currentOrders.map((order, index) => (
+                      <motion.tr
+                        key={order.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="cursor-pointer hover:bg-gray-50"
+                      >
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          <span className="font-medium">{order.id}</span>
+                        </TableCell>
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          {order.customer.name}
+                        </TableCell>
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          {order.package.name}
+                        </TableCell>
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          <StatusBadge 
+                            status={
+                              order.stages.every(s => s.status === 'completed') ? 'completed' :
+                              order.stages.some(s => s.status === 'in-progress') ? 'in-progress' :
+                              'pending'
+                            } 
+                            size="sm" 
+                          />
+                        </TableCell>
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          ₹{order.totalAmount.toLocaleString()}
+                        </TableCell>
+                        <TableCell onClick={() => handleViewOrder(order.id)}>
+                          {new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewOrder(order.id);
+                            }}
+                            className="text-gray-500 hover:text-quicksite-blue transition-colors p-1"
+                          >
+                            <FileText size={16} />
+                          </button>
+                          {profile?.role === 'admin' && (
+                            <>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOrder(order.id);
+                                }}
+                                className="text-gray-500 hover:text-amber-500 transition-colors p-1"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteOrder(order.id);
+                                }}
+                                className="text-gray-500 hover:text-red-500 transition-colors p-1"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </TableCell>
+                      </motion.tr>
+                    ))
                   )}
                 </TableBody>
               </Table>

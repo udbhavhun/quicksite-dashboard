@@ -26,7 +26,7 @@ const Login = () => {
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { isAuthenticated, updateProfile } = useUserStore();
+  const { isAuthenticated, login } = useUserStore();
   
   // Redirect if already logged in
   useEffect(() => {
@@ -41,42 +41,21 @@ const Login = () => {
     setAuthError(null);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const success = await login(email, password);
       
-      if (error) {
-        setAuthError(error.message);
+      if (success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        navigate('/');
+      } else {
+        setAuthError("Invalid email or password. Please try again.");
         toast({
           title: "Login failed",
-          description: error.message,
+          description: "Invalid email or password. Please try again.",
           variant: "destructive"
         });
-      } else if (data.user) {
-        // Fetch user profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (profileData) {
-          updateProfile({
-            id: data.user.id,
-            email: data.user.email || '',
-            name: profileData.name || '',
-            role: profileData.role as 'customer' | 'admin',
-            avatar: profileData.avatar_url
-          });
-          
-          toast({
-            title: "Login successful",
-            description: "Welcome back!",
-          });
-          
-          navigate('/');
-        }
       }
     } catch (error) {
       console.error("Login error:", error);

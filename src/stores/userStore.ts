@@ -22,7 +22,6 @@ interface UserState {
   isAuthenticated: boolean;
   profile: UserProfile | null;
   login: (email: string, password: string) => Promise<boolean>;
-  loginAs: (userType: UserType, userName: string) => void;
   logout: () => Promise<void>;
   updateProfile: (profile: Partial<UserProfile>) => void;
 }
@@ -83,19 +82,6 @@ export const useUserStore = create<UserState>()(
           return false;
         }
       },
-      
-      loginAs: (userType, userName) => set({
-        userType,
-        userName,
-        isAuthenticated: true,
-        profile: {
-          id: userType === 'admin' ? 'user-2' : 'user-1',
-          name: userName,
-          email: userType === 'admin' ? 'admin@example.com' : 'customer@example.com',
-          role: userType,
-          company: userType === 'admin' ? 'Quicksite' : 'Acme Inc.'
-        }
-      }),
       
       logout: async () => {
         try {

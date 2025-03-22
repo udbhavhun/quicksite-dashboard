@@ -22,6 +22,7 @@ import Messages from "./pages/Messages";
 import DataManagement from "./pages/DataManagement";
 import { useUserStore } from "./stores/userStore";
 import NotificationCenter from "./components/NotificationCenter";
+import CustomerManagement from "./pages/CustomerManagement";
 
 const queryClient = new QueryClient();
 
@@ -38,13 +39,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Admin-only route component
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, userType } = useUserStore();
+  const { isAuthenticated, profile } = useUserStore();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
-  if (userType !== 'admin') {
+  if (profile?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
   
@@ -88,30 +89,31 @@ const App = () => {
     // Check for existing session
     const initializeAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setIsInitialized(true);
       
-      if (!session) return;
-      
-      try {
-        // Fetch user profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+      if (session && session.user) {
+        try {
+          // Fetch user profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profileData) {
-          updateProfile({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: profileData.name || '',
-            role: profileData.role as 'customer' | 'admin',
-            avatar: profileData.avatar_url,
-          });
+          if (profileData) {
+            updateProfile({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: profileData.name || '',
+              role: profileData.role as 'customer' | 'admin',
+              avatar: profileData.avatar_url,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching profile:", error);
         }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
       }
+      
+      setIsInitialized(true);
     };
 
     initializeAuth();
@@ -122,7 +124,6 @@ const App = () => {
   }, []);
 
   if (!isInitialized) {
-    // You can add a loading state here if needed
     return <div className="flex items-center justify-center min-h-screen">
       <div className="w-8 h-8 border-4 border-quicksite-blue border-t-transparent rounded-full animate-spin"></div>
     </div>;
@@ -149,8 +150,8 @@ const App = () => {
               <Route path="/feature-requests" element={<ProtectedRoute><FeatureRequests /></ProtectedRoute>} />
               <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
               <Route path="/data-management" element={<AdminRoute><DataManagement /></AdminRoute>} />
+              <Route path="/customer-management" element={<AdminRoute><CustomerManagement /></AdminRoute>} />
               
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             

@@ -2,17 +2,34 @@
 import React from 'react';
 import { Order } from '@/lib/data';
 import { Calendar, CreditCard, Package } from 'lucide-react';
+import { useUserStore } from '@/stores/userStore';
 
 interface OrderSummaryProps {
   order: Order;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ order }) => {
+  const { profile } = useUserStore();
+  const isAdmin = profile?.role === 'admin';
+  
   // Create date formatter
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  // Check if this order belongs to the current user
+  const isUserOrder = profile?.id === order.customer.id || profile?.email === order.customer.email;
+  
+  // Only admins or the order owner can view the order details
+  if (!isAdmin && !isUserOrder) {
+    return (
+      <div className="glass-card p-6 hover-lift">
+        <h3 className="text-xl font-semibold mb-6 text-gradient">Access Denied</h3>
+        <p className="text-gray-600">You do not have permission to view this order.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="glass-card p-6 hover-lift">
