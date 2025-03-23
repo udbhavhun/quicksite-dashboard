@@ -146,3 +146,20 @@ export const videoTutorials: VideoTutorialItem[] = [
     link: '#analytics-tutorial'
   }
 ];
+
+export const contactSupport: ContactSupportItem[] = [
+  {
+    id: 'contact-1',
+    title: 'General Support',
+    description: 'For general inquiries about your website project',
+    email: 'support@quicksite.com',
+    phone: '+1 (555) 123-4567'
+  },
+  {
+    id: 'contact-2',
+    title: 'Technical Support',
+    description: 'For technical issues or questions',
+    email: 'tech@quicksite.com',
+    phone: '+1 (555) 987-6543'
+  }
+];

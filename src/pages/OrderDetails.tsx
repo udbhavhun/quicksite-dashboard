@@ -1,359 +1,194 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
+import { useParams } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
-import StatusBadge from '@/components/StatusBadge';
-import OrderForm from '@/components/OrderForm';
-import GamifiedProgressTracker from '@/components/GamifiedProgressTracker';
+import { Header } from '@/components/Header';
+import OrderSummary from '@/components/OrderSummary';
 import ProjectTimeline from '@/components/ProjectTimeline';
-import TechnicalSetupCard from '@/components/TechnicalSetupCard';
+import DetailedProgressTracker from '@/components/DetailedProgressTracker';
 import CustomerRequirements from '@/components/CustomerRequirements';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProjectFeedback from '@/components/ProjectFeedback';
 import AddOnManager from '@/components/AddOnManager';
-import { Order, ORDERS, PACKAGES } from '@/lib/data';
-import { ArrowLeft, Edit, Clock, Package as PackageIcon, MessageSquare, Server, FileText, PlusCircle } from 'lucide-react';
-import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
+import TechnicalSetupCard from '@/components/TechnicalSetupCard';
+import HostingStatusCard from '@/components/HostingStatusCard';
+import { ORDERS } from '@/lib/data';
+import CustomerDataEditor from '@/components/admin/CustomerDataEditor';
+import { useUserStore } from '@/stores/userStore';
 
 const OrderDetails = () => {
-  const { orderId } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const { orderId } = useParams<{ orderId: string }>();
+  const [order, setOrder] = useState(ORDERS.find(o => o.id === orderId));
+  const { profile } = useUserStore();
+  const isAdmin = profile?.role === 'admin';
   
-  // Fetch order details
   useEffect(() => {
-    if (orderId) {
-      // In a real app, this would be an API call
-      const foundOrder = ORDERS.find(o => o.id === orderId);
-      setOrder(foundOrder || null);
-      
-      if (!foundOrder) {
-        toast({
-          title: "Order not found",
-          description: `We couldn't find an order with ID ${orderId}`,
-          variant: "destructive"
-        });
-      }
-    }
-  }, [orderId, toast]);
-
-  const handleSaveOrder = (updatedOrder: Order) => {
-    // In a real app, this would be an API call
-    setOrder(updatedOrder);
+    // Find order by ID
+    const foundOrder = ORDERS.find(o => o.id === orderId);
+    setOrder(foundOrder);
     
-    toast({
-      title: "Changes saved",
-      description: "Order details have been updated successfully.",
-    });
-    
-    setIsEditing(false);
-  };
-
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
+  }, [orderId]);
+  
   if (!order) {
     return (
-      <div className="min-h-screen flex w-full group/sidebar-wrapper">
+      <div className="flex min-h-screen">
         <AppSidebar />
-        <SidebarInset>
+        <div className="flex-1 p-8">
           <Header />
-          <main className="flex-grow p-6">
-            <div className="max-w-7xl mx-auto">
-              <button 
-                onClick={() => navigate('/')}
-                className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft size={16} className="mr-2" />
-                Back to Dashboard
-              </button>
-              
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 text-center">
-                <h2 className="text-2xl font-semibold mb-4">Order Not Found</h2>
-                <p className="text-gray-600 mb-6">The order you're looking for doesn't exist or has been removed.</p>
-                <button 
-                  onClick={() => navigate('/')}
-                  className="py-2 px-4 bg-quicksite-blue text-white rounded-lg"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
+          <div className="h-[80vh] flex items-center justify-center">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">Order Not Found</h2>
+              <p className="text-gray-500 mt-2">The order you're looking for doesn't exist or you don't have permission to view it.</p>
             </div>
-          </main>
-        </SidebarInset>
+          </div>
+        </div>
       </div>
     );
   }
-
+  
   return (
-    <div className="min-h-screen w-full flex group/sidebar-wrapper">
+    <div className="flex min-h-screen">
       <AppSidebar />
-      <SidebarInset className="overflow-auto">
+      <div className="flex-1 p-8">
         <Header />
-        <main className="flex-grow p-4 md:p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center">
-                <SidebarTrigger className="mr-2 sm:hidden" />
-                <button 
-                  onClick={() => navigate('/')}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <ArrowLeft size={16} className="mr-2" />
-                  Back to Dashboard
-                </button>
-              </div>
-              
-              <div className="flex gap-2">
-                {isEditing ? (
-                  <button 
-                    onClick={() => setIsEditing(false)}
-                    className="py-2 px-4 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => setIsEditing(true)}
-                    className="py-2 px-4 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center"
-                  >
-                    <Edit size={16} className="mr-2" />
-                    Edit Order
-                  </button>
-                )}
-              </div>
+        
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gradient">Order Details</h1>
+              <p className="text-gray-500">{order.customer.name}'s {order.package.name} Website</p>
             </div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold">
-                  Order {order.id}
-                </h1>
-                <StatusBadge status={
-                  order.stages.every(s => s.status === 'completed') ? 'completed' :
-                  order.stages.some(s => s.status === 'in-progress') ? 'in-progress' :
-                  'pending'
-                } size="lg" />
-              </div>
-              
-              {isEditing ? (
-                <OrderForm 
-                  order={order} 
-                  onSave={handleSaveOrder} 
-                  onCancel={() => setIsEditing(false)} 
-                />
-              ) : (
-                <div>
-                  <OrderDetailsView order={order} />
-                  
-                  <div className="mt-8">
-                    <Tabs defaultValue="progress" className="mb-8">
-                      <TabsList className="mb-6 glass-card p-1 bg-white/50 overflow-x-auto flex whitespace-nowrap">
-                        <TabsTrigger value="progress" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <Clock size={16} className="mr-2" />
-                          Detailed Progress
-                        </TabsTrigger>
-                        <TabsTrigger value="timeline" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <FileText size={16} className="mr-2" />
-                          Project Timeline
-                        </TabsTrigger>
-                        <TabsTrigger value="technical" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <Server size={16} className="mr-2" />
-                          Technical Setup
-                        </TabsTrigger>
-                        <TabsTrigger value="requirements" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <PackageIcon size={16} className="mr-2" />
-                          Requirements
-                        </TabsTrigger>
-                        <TabsTrigger value="communication" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <MessageSquare size={16} className="mr-2" />
-                          Communication
-                        </TabsTrigger>
-                        <TabsTrigger value="addons" className="rounded-lg data-[state=active]:bg-white flex items-center">
-                          <PlusCircle size={16} className="mr-2" />
-                          Add-ons
-                        </TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="progress">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <GamifiedProgressTracker stages={order.stages} />
-                        </motion.div>
-                      </TabsContent>
-                      
-                      <TabsContent value="timeline">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="glass-card p-6"
-                        >
-                          <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Timeline</h2>
-                          <ProjectTimeline order={order} />
-                        </motion.div>
-                      </TabsContent>
-                      
-                      <TabsContent value="technical">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <TechnicalSetupCard 
-                            orderId={order.id}
-                            domainName="yourdomain.com"
-                            isSSLActive={true}
-                            diskUsage={23}
-                            bandwidthUsage={7}
-                            serverLocation="Asia Pacific (Mumbai)"
-                            uptime={99.98}
-                          />
-                        </motion.div>
-                      </TabsContent>
-                      
-                      <TabsContent value="requirements">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="glass-card p-6"
-                        >
-                          <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Requirements</h2>
-                          <CustomerRequirements order={order} userType="customer" />
-                        </motion.div>
-                      </TabsContent>
-                      
-                      <TabsContent value="communication">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="glass-card p-6"
-                        >
-                          <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Communication</h2>
-                          <ProjectFeedback order={order} userType="customer" />
-                        </motion.div>
-                      </TabsContent>
-                      
-                      <TabsContent value="addons">
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="glass-card p-6"
-                        >
-                          <h2 className="text-2xl font-semibold mb-6 text-gradient">Project Add-ons</h2>
-                          <AddOnManager orderId={order.id} userType="customer" />
-                        </motion.div>
-                      </TabsContent>
-                    </Tabs>
+            <StatusBadge status={order.status} />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <OrderSummary order={order} />
+          
+          <div className="lg:col-span-2">
+            <DetailedProgressTracker progress={order.progress} />
+          </div>
+        </div>
+        
+        <Tabs defaultValue="timeline" className="mb-8">
+          <TabsList>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="requirements">Requirements</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
+            <TabsTrigger value="addons">Add-ons</TabsTrigger>
+            <TabsTrigger value="technical">Technical Setup</TabsTrigger>
+            {isAdmin && <TabsTrigger value="data-management">Data Management</TabsTrigger>}
+          </TabsList>
+          
+          <TabsContent value="timeline" className="pt-4">
+            <ProjectTimeline timeline={order.timeline} />
+          </TabsContent>
+          
+          <TabsContent value="requirements" className="pt-4">
+            <CustomerRequirements requirements={order.requirements} />
+          </TabsContent>
+          
+          <TabsContent value="feedback" className="pt-4">
+            <ProjectFeedback feedback={order.feedback} />
+          </TabsContent>
+          
+          <TabsContent value="addons" className="pt-4">
+            <AddOnManager orderId={order.id} initialAddOns={order.addOns} />
+          </TabsContent>
+          
+          <TabsContent value="technical" className="pt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <TechnicalSetupCard order={order} />
+              <HostingStatusCard order={order} />
+            </div>
+            <Separator className="my-8" />
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle>Domain Setup</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500 mb-4">Current domain configuration for your website:</p>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="font-medium">Domain Name:</div>
+                    <div className="font-mono">{order.domain?.name || "Not configured"}</div>
+                    
+                    <div className="font-medium">Domain Status:</div>
+                    <div>
+                      <StatusBadge
+                        status={order.domain?.status || "pending"}
+                        statusMap={{
+                          active: "Active",
+                          pending: "Pending",
+                          transferring: "Transferring",
+                          expired: "Expired"
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="font-medium">Nameservers:</div>
+                    <div className="font-mono">
+                      {order.domain?.nameservers?.map((ns, i) => (
+                        <div key={i}>{ns}</div>
+                      )) || "Not configured"}
+                    </div>
+                    
+                    <div className="font-medium">Expiry:</div>
+                    <div>{order.domain?.expiryDate || "N/A"}</div>
                   </div>
                 </div>
-              )}
-            </motion.div>
-          </div>
-        </main>
-      </SidebarInset>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {isAdmin && (
+            <TabsContent value="data-management" className="pt-4">
+              <CustomerDataEditor 
+                orderId={order.id} 
+                customerId={order.customer.id} 
+              />
+            </TabsContent>
+          )}
+        </Tabs>
+      </div>
     </div>
   );
 };
 
-// Separate component for the read-only view
-const OrderDetailsView = ({ order }: { order: Order }) => {
+// Helper component for status badges
+const StatusBadge = ({ 
+  status, 
+  statusMap = {
+    pending: "Pending",
+    inProgress: "In Progress",
+    underReview: "Under Review",
+    completed: "Completed",
+    cancelled: "Cancelled"
+  } 
+}) => {
+  const getStatusColor = (status: string) => {
+    const colors = {
+      pending: "bg-yellow-100 text-yellow-800",
+      inProgress: "bg-blue-100 text-blue-800",
+      underReview: "bg-purple-100 text-purple-800",
+      completed: "bg-green-100 text-green-800",
+      active: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
+      transferring: "bg-blue-100 text-blue-800",
+      expired: "bg-gray-100 text-gray-800"
+    };
+    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
+  };
+  
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-card p-6">
-          <h3 className="text-xl font-semibold mb-4">Customer Information</h3>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-500">Name</p>
-              <p className="font-medium">{order.customer.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{order.customer.email}</p>
-            </div>
-            {order.customer.phone && (
-              <div>
-                <p className="text-sm text-gray-500">Phone</p>
-                <p className="font-medium">{order.customer.phone}</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <h4 className="text-base font-medium mb-3">Package Details</h4>
-            <p className="text-lg font-semibold mb-1">{order.package.name}</p>
-            <p className="text-gray-600 mb-3">{order.package.description}</p>
-            <p className="text-lg font-semibold">₹{order.totalAmount.toLocaleString()}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="lg:col-span-2">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-card p-6">
-          <h3 className="text-xl font-semibold mb-4">Order Timeline</h3>
-          
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-500">Order Date</p>
-                <p className="font-medium">{new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Estimated Delivery</p>
-                <p className="font-medium">{new Date(order.estimatedDelivery).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Payment Status</p>
-                <p className={`font-medium ${
-                  order.paymentStatus === 'paid' ? 'text-quicksite-success' : 
-                  order.paymentStatus === 'pending' ? 'text-quicksite-warning' : 
-                  'text-quicksite-error'
-                }`}>
-                  {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
-                </p>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-100 pt-4">
-              <h4 className="text-base font-medium mb-4">Progress Status</h4>
-              <div className="space-y-4">
-                {order.stages.map((stage) => (
-                  <div key={stage.id} className="flex items-center">
-                    <StatusBadge status={stage.status} size="sm" className="min-w-24" />
-                    <div className="flex-grow ml-3">
-                      <p className="text-sm font-medium">{stage.name}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className={`rounded-full h-2 ${
-                            stage.status === 'completed' ? 'bg-quicksite-success' : 
-                            stage.status === 'in-progress' ? 'bg-quicksite-blue' : 
-                            stage.status === 'pending' ? 'bg-quicksite-warning' : 
-                            'bg-gray-300'
-                          }`}
-                          style={{ width: `${stage.percentComplete}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <span className="ml-3 text-sm">{stage.percentComplete}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(status)}`}>
+      {statusMap[status as keyof typeof statusMap] || status}
+    </span>
   );
 };
 

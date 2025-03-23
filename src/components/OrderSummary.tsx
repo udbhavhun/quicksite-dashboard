@@ -36,9 +36,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ orders = [], order }) => {
     );
   }
 
-  // Ensure orders is an array before filtering
-  if (!Array.isArray(orders) || orders.length === 0) {
-    // Return a fallback UI when orders is not available
+  // Ensure orders is an array before proceeding
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  
+  // Return a fallback UI when orders array is empty
+  if (safeOrders.length === 0) {
     return (
       <Card className="glass-card">
         <CardHeader>
@@ -53,8 +55,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ orders = [], order }) => {
 
   // Filter orders based on user role - safely check if profile exists first
   const ordersForCustomer = profile ? (isAdmin 
-    ? orders 
-    : orders.filter(order => order.customer.email === profile.email)
+    ? safeOrders 
+    : safeOrders.filter(order => order.customer.email === profile.email)
   ) : [];
 
   // Calculate total orders

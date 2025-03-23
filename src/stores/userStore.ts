@@ -51,8 +51,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
+      // Ensure email is lowercase for consistency
+      const normalizedEmail = email.toLowerCase().trim();
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password,
       });
       
@@ -87,9 +90,8 @@ export const useUserStore = create<UserState>((set, get) => ({
             name: profileData?.name || '',
             role: (profileData?.role as 'customer' | 'admin') || 'customer',
             avatar: profileData?.avatar_url,
-            // Optional properties with safe access
-            company: profileData?.company,
-            phone: profileData?.phone,
+            company: profileData?.company || undefined,
+            phone: profileData?.phone || undefined,
           },
           isLoading: false,
         });
@@ -106,8 +108,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ isLoading: true, error: null });
     
     try {
+      // Ensure email is lowercase for consistency
+      const normalizedEmail = email.toLowerCase().trim();
+      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: normalizedEmail,
         password,
         options: {
           data: {
@@ -125,7 +130,7 @@ export const useUserStore = create<UserState>((set, get) => ({
           .insert([
             { 
               id: data.user.id,
-              email: data.user.email,
+              email: normalizedEmail,
               name: name,
               role: 'customer'
             }
@@ -137,11 +142,17 @@ export const useUserStore = create<UserState>((set, get) => ({
           isAuthenticated: true,
           profile: {
             id: data.user.id,
-            email: data.user.email || '',
+            email: normalizedEmail,
             name: name,
             role: 'customer',
           },
           isLoading: false,
+        });
+        
+        // Show success message
+        toast({
+          title: "Account created",
+          description: "Your account has been successfully created.",
         });
       }
     } catch (error) {
@@ -159,6 +170,12 @@ export const useUserStore = create<UserState>((set, get) => ({
       set({
         isAuthenticated: false,
         profile: null,
+      });
+      
+      // Show success message
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to logout';

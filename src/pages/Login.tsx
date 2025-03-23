@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserStore } from "@/stores/userStore";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -75,6 +76,44 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
+  // Initialize demo customer in Supabase if it doesn't exist
+  const createDemoCustomerIfNeeded = async () => {
+    // Check if customer demo user exists
+    const { data: existingUsers } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('email', 'customer@example.com')
+      .limit(1);
+    
+    if (!existingUsers || existingUsers.length === 0) {
+      // Create the demo customer user
+      const { data, error } = await supabase.auth.signUp({
+        email: 'customer@example.com',
+        password: 'customer123',
+        options: {
+          data: {
+            name: 'Customer Demo',
+          },
+        }
+      });
+      
+      if (error) {
+        console.error("Failed to create demo customer:", error);
+      } else if (data.user) {
+        // Set the role to customer explicitly
+        await supabase
+          .from('profiles')
+          .update({ role: 'customer' })
+          .eq('id', data.user.id);
+      }
+    }
+  };
+  
+  // Create demo accounts if needed when component mounts
+  React.useEffect(() => {
+    createDemoCustomerIfNeeded();
+  }, []);
   
   const setDemoLogin = (type: 'admin' | 'customer') => {
     if (type === 'admin') {
