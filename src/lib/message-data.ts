@@ -152,3 +152,6 @@ export const MOCK_MESSAGE_THREADS: MessageThread[] = [
     ]
   }
 ];
+
+// Export messages array for data management
+export const messages = MOCK_MESSAGE_THREADS;

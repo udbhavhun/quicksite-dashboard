@@ -117,3 +117,8 @@ export const mockSites: SiteMetrics[] = [
     orderId: 'ORD-2023-003'
   }
 ];
+
+// Export data for data management
+export const performanceData = mockSites;
+export const bugReports = []; // Add sample bug reports if needed
+export const featureRequests = []; // Add sample feature requests if needed

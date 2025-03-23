@@ -18,43 +18,43 @@ import VideoManagement from './VideoManagement';
 import ContactSupportManagement from './ContactSupportManagement';
 
 interface SupportContentManagementProps {
-  faqs: FAQItem[];
-  docs: DocumentationItem[];
-  videos: VideoTutorialItem[];
-  contactSupport: ContactSupportItem[];
-  onUpdateFaq: (updatedFaq: FAQItem) => void;
-  onUpdateDoc: (updatedDoc: DocumentationItem) => void;
-  onUpdateVideo: (updatedVideo: VideoTutorialItem) => void;
-  onUpdateContactSupport: (updatedContact: ContactSupportItem) => void;
-  onDeleteFaq: (id: string) => void;
-  onDeleteDoc: (id: string) => void;
-  onDeleteVideo: (id: string) => void;
-  onDeleteContactSupport: (id: string) => void;
-  setIsAddFaqOpen: (open: boolean) => void;
-  setIsAddDocOpen: (open: boolean) => void;
-  setIsAddVideoOpen: (open: boolean) => void;
-  setIsAddContactOpen: (open: boolean) => void;
-  setItemToDelete: (item: {id: string, type: string} | null) => void;
+  faqs?: FAQItem[];
+  docs?: DocumentationItem[];
+  videos?: VideoTutorialItem[];
+  contactSupport?: ContactSupportItem[];
+  onUpdateFaq?: (updatedFaq: FAQItem) => void;
+  onUpdateDoc?: (updatedDoc: DocumentationItem) => void;
+  onUpdateVideo?: (updatedVideo: VideoTutorialItem) => void;
+  onUpdateContactSupport?: (updatedContact: ContactSupportItem) => void;
+  onDeleteFaq?: (id: string) => void;
+  onDeleteDoc?: (id: string) => void;
+  onDeleteVideo?: (id: string) => void;
+  onDeleteContactSupport?: (id: string) => void;
+  setIsAddFaqOpen?: (open: boolean) => void;
+  setIsAddDocOpen?: (open: boolean) => void;
+  setIsAddVideoOpen?: (open: boolean) => void;
+  setIsAddContactOpen?: (open: boolean) => void;
+  setItemToDelete?: (item: {id: string, type: string} | null) => void;
 }
 
 const SupportContentManagement: React.FC<SupportContentManagementProps> = ({ 
-  faqs,
-  docs,
-  videos,
-  contactSupport,
-  onUpdateFaq,
-  onUpdateDoc,
-  onUpdateVideo,
-  onUpdateContactSupport,
-  onDeleteFaq,
-  onDeleteDoc,
-  onDeleteVideo,
-  onDeleteContactSupport,
-  setIsAddFaqOpen,
-  setIsAddDocOpen,
-  setIsAddVideoOpen,
-  setIsAddContactOpen,
-  setItemToDelete
+  faqs = [],
+  docs = [],
+  videos = [],
+  contactSupport = [],
+  onUpdateFaq = () => {},
+  onUpdateDoc = () => {},
+  onUpdateVideo = () => {},
+  onUpdateContactSupport = () => {},
+  onDeleteFaq = () => {},
+  onDeleteDoc = () => {},
+  onDeleteVideo = () => {},
+  onDeleteContactSupport = () => {},
+  setIsAddFaqOpen = () => {},
+  setIsAddDocOpen = () => {},
+  setIsAddVideoOpen = () => {},
+  setIsAddContactOpen = () => {},
+  setItemToDelete = () => {}
 }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('faqs');

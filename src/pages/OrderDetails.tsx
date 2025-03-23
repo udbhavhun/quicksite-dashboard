@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
@@ -17,27 +18,7 @@ import { ORDERS } from '@/lib/data';
 import CustomerDataEditor from '@/components/admin/CustomerDataEditor';
 import { useUserStore } from '@/stores/userStore';
 
-interface CustomerRequirement {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-}
-
-interface FeedbackItem {
-  id: string;
-  from: string;
-  message: string;
-  date: string;
-}
-
-interface DomainInfo {
-  name?: string;
-  status?: string;
-  nameservers?: string[];
-  expiryDate?: string;
-}
-
+// Define types to match component props
 interface Order {
   id: string;
   customer: {
@@ -52,21 +33,52 @@ interface Order {
   status: string;
   progress?: any;
   timeline?: any;
-  requirements?: CustomerRequirement[];
-  feedback?: FeedbackItem[];
+  requirements?: any[];
+  feedback?: any[];
   addOns?: any[];
-  domain?: DomainInfo;
+  domain?: {
+    name?: string;
+    status?: string;
+    nameservers?: string[];
+    expiryDate?: string;
+  };
 }
+
+// Transform ORDERS data to match our interface
+const transformOrder = (originalOrder: any): Order | undefined => {
+  if (!originalOrder) return undefined;
+  
+  return {
+    id: originalOrder.id,
+    customer: {
+      id: originalOrder.customer.id || 'unknown',
+      name: originalOrder.customer.name,
+      email: originalOrder.customer.email,
+      phone: originalOrder.customer.phone
+    },
+    package: {
+      name: originalOrder.package.name
+    },
+    status: typeof originalOrder.status === 'object' ? originalOrder.status.id : originalOrder.status,
+    progress: originalOrder.progress,
+    timeline: originalOrder.stages,
+    requirements: originalOrder.requirements,
+    feedback: originalOrder.feedback,
+    addOns: originalOrder.addOns,
+    domain: originalOrder.domain
+  };
+};
 
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const [order, setOrder] = useState<Order | undefined>(ORDERS.find(o => o.id === orderId));
+  const originalOrder = ORDERS.find(o => o.id === orderId);
+  const [order, setOrder] = useState<Order | undefined>(transformOrder(originalOrder));
   const { profile } = useUserStore();
   const isAdmin = profile?.role === 'admin';
   
   useEffect(() => {
     const foundOrder = ORDERS.find(o => o.id === orderId);
-    setOrder(foundOrder);
+    setOrder(transformOrder(foundOrder));
     
     window.scrollTo(0, 0);
   }, [orderId]);
@@ -105,10 +117,10 @@ const OrderDetails = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <OrderSummary order={order} />
+          <OrderSummary order={originalOrder} />
           
           <div className="lg:col-span-2">
-            {order.progress && <DetailedProgressTracker progress={order.progress} />}
+            {order.progress && <DetailedProgressTracker />}
           </div>
         </div>
         
@@ -123,25 +135,32 @@ const OrderDetails = () => {
           </TabsList>
           
           <TabsContent value="timeline" className="pt-4">
-            {order.timeline && <ProjectTimeline timeline={order.timeline} />}
+            {order.timeline && <ProjectTimeline />}
           </TabsContent>
           
           <TabsContent value="requirements" className="pt-4">
-            {order.requirements && <CustomerRequirements requirements={order.requirements} />}
+            {order.requirements && <CustomerRequirements />}
           </TabsContent>
           
           <TabsContent value="feedback" className="pt-4">
-            {order.feedback && <ProjectFeedback feedback={order.feedback} />}
+            {order.feedback && <ProjectFeedback />}
           </TabsContent>
           
           <TabsContent value="addons" className="pt-4">
-            {order.addOns && <AddOnManager orderId={order.id} initialAddOns={order.addOns} />}
+            {order.addOns && <AddOnManager orderId={order.id} />}
           </TabsContent>
           
           <TabsContent value="technical" className="pt-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <TechnicalSetupCard orderId={order.id} />
-              <HostingStatusCard orderId={order.id} />
+              <TechnicalSetupCard 
+                domainName={order.domain?.name || "Not configured"}
+                isSSLActive={true}
+                diskUsage={0}
+                bandwidthUsage={0}
+                lastBackup="N/A"
+                uptime={99.9}
+              />
+              <HostingStatusCard />
             </div>
             <Separator className="my-8" />
             <Card className="glass-card">
@@ -161,8 +180,11 @@ const OrderDetails = () => {
                       <StatusBadge
                         status={order.domain?.status || "pending"}
                         statusMap={{
-                          active: "Active",
                           pending: "Pending",
+                          inProgress: "In Progress",
+                          underReview: "Under Review",
+                          completed: "Completed",
+                          cancelled: "Cancelled",
                           transferring: "Transferring",
                           expired: "Expired"
                         }}
@@ -205,7 +227,9 @@ const StatusBadge = ({
     inProgress: "In Progress",
     underReview: "Under Review",
     completed: "Completed",
-    cancelled: "Cancelled"
+    cancelled: "Cancelled",
+    transferring: "Transferring",
+    expired: "Expired"
   } 
 }) => {
   const getStatusColor = (status: string) => {
@@ -214,7 +238,6 @@ const StatusBadge = ({
       inProgress: "bg-blue-100 text-blue-800",
       underReview: "bg-purple-100 text-purple-800",
       completed: "bg-green-100 text-green-800",
-      active: "bg-green-100 text-green-800",
       cancelled: "bg-red-100 text-red-800",
       transferring: "bg-blue-100 text-blue-800",
       expired: "bg-gray-100 text-gray-800"

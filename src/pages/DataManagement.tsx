@@ -25,7 +25,6 @@ interface Order {
     name: string;
     email: string;
   };
-  // Add other fields as needed
   status: string;
   package: {
     name: string;
@@ -33,10 +32,27 @@ interface Order {
   };
 }
 
+// Transform ORDERS to match our Order interface
+const transformOrders = (): Order[] => {
+  return ORDERS.map(order => ({
+    id: order.id,
+    customer: {
+      id: order.customer.id || 'unknown', // Provide default if missing
+      name: order.customer.name,
+      email: order.customer.email
+    },
+    status: typeof order.status === 'object' ? order.status.id : order.status,
+    package: {
+      name: order.package.name,
+      price: order.package.price
+    }
+  }));
+};
+
 const DataManagement = () => {
   // State for all the data we'll be managing
   const [activeTab, setActiveTab] = useState('customer-data');
-  const [orders, setOrders] = useState<Order[]>(ORDERS);
+  const [orders, setOrders] = useState<Order[]>(transformOrders());
   const [messagesList, setMessagesList] = useState(messages);
   const [faqsList, setFaqsList] = useState(faqs);
   const [docsList, setDocsList] = useState(documentation);
@@ -137,7 +153,7 @@ const DataManagement = () => {
           
           <TabsContent value="customer-data">
             <CustomerDataManagement 
-              customerData={customerData} 
+              data={customerData} 
               updateData={updateData}
               createData={createData}
               deleteData={deleteData}
@@ -148,8 +164,8 @@ const DataManagement = () => {
           
           <TabsContent value="orders">
             <OrderManagement 
-              orders={orders} 
-              onSelectCustomerOrder={handleSelectCustomerOrder} 
+              orders={transformOrders()}
+              onSelectCustomerOrder={handleSelectCustomerOrder}
             />
           </TabsContent>
           
