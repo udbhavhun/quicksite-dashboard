@@ -60,11 +60,11 @@ export const useCustomerData = ({ orderId, contentType, key }: UseCustomerDataPr
         query = query.eq('content_key', key);
       }
       
-      const { data, error } = await query;
+      const { data: customerData, error: queryError } = await query;
       
-      if (error) throw error;
+      if (queryError) throw queryError;
       
-      setData(data || []);
+      setData(customerData || []);
     } catch (error) {
       console.error('Error fetching customer data:', error);
       setError(error instanceof Error ? error : new Error('Failed to fetch customer data'));

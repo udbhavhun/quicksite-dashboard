@@ -2,18 +2,37 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Header } from "@/components/Header";
+import Header from "@/components/Header";
 import AppSidebar from '@/components/AppSidebar';
-import { OrderManagement } from '@/components/data-management/OrderManagement';
-import { MessageManagement } from '@/components/data-management/MessageManagement';
-import { FeatureRequestManagement } from '@/components/data-management/FeatureRequestManagement';
-import { SitePerformanceManagement } from '@/components/data-management/SitePerformanceManagement';
-import { SupportContentManagement } from '@/components/data-management/support/SupportContentManagement';
+import OrderManagement from '@/components/data-management/OrderManagement';
+import MessageManagement from '@/components/data-management/MessageManagement';
+import FeatureRequestManagement from '@/components/data-management/FeatureRequestManagement';
+import SitePerformanceManagement from '@/components/data-management/SitePerformanceManagement';
+import SupportContentManagement from '@/components/data-management/support/SupportContentManagement';
 import CustomerDataManagement from '@/components/data-management/CustomerDataManagement';
 import { ORDERS } from '@/lib/data';
 import { faqs, documentation, videoTutorials } from '@/lib/support-data';
-import { MESSAGES } from '@/lib/message-data';
-import { PERFORMANCE_DATA, BUG_REPORTS, FEATURE_REQUESTS } from '@/lib/site-data';
+
+// Mock data imports (these should be adjusted if you have real data sources)
+const MESSAGES = [
+  { id: '1', from: 'customer@example.com', subject: 'Question about my website', content: 'When will my website be ready?', read: false, date: '2023-09-15' },
+  { id: '2', from: 'support@agency.com', subject: 'Your website progress', content: 'Here is an update on your website project...', read: true, date: '2023-09-14' }
+];
+
+const PERFORMANCE_DATA = [
+  { id: '1', date: '2023-09-01', pageViews: 1250, avgLoadTime: 1.3, bounceRate: 35 },
+  { id: '2', date: '2023-09-02', pageViews: 1300, avgLoadTime: 1.2, bounceRate: 33 }
+];
+
+const BUG_REPORTS = [
+  { id: '1', title: 'Navigation breaks on mobile', description: 'The navigation menu does not work properly on iOS devices', status: 'open', reportedBy: 'customer@example.com', date: '2023-09-10' },
+  { id: '2', title: 'Contact form error', description: 'The contact form submission gives a 404 error', status: 'in-progress', reportedBy: 'support@agency.com', date: '2023-09-09' }
+];
+
+const FEATURE_REQUESTS = [
+  { id: '1', title: 'Add dark mode', description: 'Would like a dark mode option for the website', status: 'under-review', requestedBy: 'customer@example.com', date: '2023-09-05', votes: 12 },
+  { id: '2', title: 'Improved search', description: 'Search functionality needs filters and better results', status: 'planned', requestedBy: 'sales@example.com', date: '2023-09-03', votes: 8 }
+];
 
 // Mock contact support items
 const contactSupport = [
@@ -52,6 +71,48 @@ const DataManagement = () => {
     setSelectedCustomerId(customerId);
     setSelectedOrderId(orderId);
   };
+
+  // State for delete confirmation
+  const [itemToDelete, setItemToDelete] = useState<{id: string, type: string} | null>(null);
+
+  // Functions for managing support content
+  const handleUpdateFaq = (updatedFaq: any) => {
+    setFaqItems(faqItems.map(faq => faq.id === updatedFaq.id ? updatedFaq : faq));
+  };
+
+  const handleUpdateDoc = (updatedDoc: any) => {
+    setDocItems(docItems.map(doc => doc.id === updatedDoc.id ? updatedDoc : doc));
+  };
+
+  const handleUpdateVideo = (updatedVideo: any) => {
+    setVideoItems(videoItems.map(video => video.id === updatedVideo.id ? updatedVideo : video));
+  };
+
+  const handleUpdateContactSupport = (updatedContact: any) => {
+    setContactItems(contactItems.map(contact => contact.id === updatedContact.id ? updatedContact : contact));
+  };
+
+  const handleDeleteFaq = (id: string) => {
+    setFaqItems(faqItems.filter(faq => faq.id !== id));
+  };
+
+  const handleDeleteDoc = (id: string) => {
+    setDocItems(docItems.filter(doc => doc.id !== id));
+  };
+
+  const handleDeleteVideo = (id: string) => {
+    setVideoItems(videoItems.filter(video => video.id !== id));
+  };
+
+  const handleDeleteContactSupport = (id: string) => {
+    setContactItems(contactItems.filter(contact => contact.id !== id));
+  };
+
+  // State for add dialogs
+  const [isAddFaqOpen, setIsAddFaqOpen] = useState(false);
+  const [isAddDocOpen, setIsAddDocOpen] = useState(false);
+  const [isAddVideoOpen, setIsAddVideoOpen] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen">
@@ -115,6 +176,19 @@ const DataManagement = () => {
                   docs={docItems} 
                   videos={videoItems} 
                   contactSupport={contactItems}
+                  onUpdateFaq={handleUpdateFaq}
+                  onUpdateDoc={handleUpdateDoc}
+                  onUpdateVideo={handleUpdateVideo}
+                  onUpdateContactSupport={handleUpdateContactSupport}
+                  onDeleteFaq={handleDeleteFaq}
+                  onDeleteDoc={handleDeleteDoc}
+                  onDeleteVideo={handleDeleteVideo}
+                  onDeleteContactSupport={handleDeleteContactSupport}
+                  setIsAddFaqOpen={setIsAddFaqOpen}
+                  setIsAddDocOpen={setIsAddDocOpen}
+                  setIsAddVideoOpen={setIsAddVideoOpen}
+                  setIsAddContactOpen={setIsAddContactOpen}
+                  setItemToDelete={setItemToDelete}
                 />
               </TabsContent>
 

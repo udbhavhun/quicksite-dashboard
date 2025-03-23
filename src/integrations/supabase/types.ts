@@ -42,6 +42,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_content: {
+        Row: {
+          content_key: string
+          content_type: string
+          content_value: Json
+          created_at: string | null
+          id: string
+          order_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content_key: string
+          content_type: string
+          content_value: Json
+          created_at?: string | null
+          id?: string
+          order_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content_key?: string
+          content_type?: string
+          content_value?: Json
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -75,6 +108,30 @@ export type Database = {
           phone?: string | null
           role?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
         }
         Relationships: []
       }
