@@ -17,19 +17,28 @@ import ProjectProgressAnimation from '@/components/ProjectProgressAnimation';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [activeOrder, setActiveOrder] = useState(ORDERS[0]);
+  const { userType, userName, profile } = useUserStore();
+  const [activeOrder, setActiveOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [animateIn, setAnimateIn] = useState(false);
-  const { userType, userName } = useUserStore();
   
+  // Find the user's order based on their email
   useEffect(() => {
+    if (profile && profile.email) {
+      const userOrder = ORDERS.find(order => order.customer.email === profile.email);
+      setActiveOrder(userOrder || ORDERS[0]);
+    } else {
+      // Default to first order if no matching email
+      setActiveOrder(ORDERS[0]);
+    }
+    
     const timer = setTimeout(() => {
       setLoading(false);
       setAnimateIn(true);
     }, 800);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [profile]);
 
   const showNotification = () => {
     toast({
@@ -74,10 +83,10 @@ const Index = () => {
                       {userType === 'customer' ? 'My Dashboard' : 'Admin Dashboard'}
                     </h1>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 mt-2">
                     {userType === 'customer' 
-                      ? 'Track your website build progress and manage your orders' 
-                      : 'Monitor customer orders and project progress'}
+                      ? `Welcome back, ${userName}! Track your website build progress and manage your orders.` 
+                      : `Welcome back, ${userName}! Monitor customer orders and project progress.`}
                   </p>
                 </div>
                 
@@ -104,32 +113,40 @@ const Index = () => {
                 animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div className="glass-card p-6 mb-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-gradient">Current Project</h2>
-                    <div className="mt-2 md:mt-0 flex items-center">
-                      <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="ml-2 text-xs glass-button"
-                        onClick={() => navigate('/orders/' + activeOrder.id)}
-                      >
-                        <FileText size={14} className="mr-1" />
-                        Detailed View
-                      </Button>
+                {activeOrder ? (
+                  <div className="glass-card p-6 mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                      <h2 className="text-2xl font-semibold text-gradient">Your Current Project</h2>
+                      <div className="mt-2 md:mt-0 flex items-center">
+                        <StatusBadge status={activeOrder.stages.some(s => s.status === 'in-progress') ? 'in-progress' : 'completed'} />
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="ml-2 text-xs glass-button"
+                          onClick={() => navigate('/orders/' + activeOrder.id)}
+                        >
+                          <FileText size={14} className="mr-1" />
+                          Detailed View
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-1">
+                        <OrderSummary order={activeOrder} />
+                      </div>
+                      <div className="lg:col-span-2">
+                        <ProjectProgressAnimation stages={activeOrder.stages} />
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-1">
-                      <OrderSummary order={activeOrder} />
-                    </div>
-                    <div className="lg:col-span-2">
-                      <ProjectProgressAnimation stages={activeOrder.stages} />
-                    </div>
+                ) : (
+                  <div className="glass-card p-6 mb-6 text-center">
+                    <h2 className="text-2xl font-semibold text-gradient mb-4">Welcome to QuickSite!</h2>
+                    <p className="mb-4">It looks like you don't have any active projects yet.</p>
+                    <Button onClick={() => navigate('/support')}>Contact Us to Get Started</Button>
                   </div>
-                </div>
+                )}
               </motion.div>
             ) : (
               <div className="mb-8">

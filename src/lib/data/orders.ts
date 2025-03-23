@@ -9,6 +9,7 @@ export const ORDERS: Order[] = [
     id: "ORD-2023-001",
     package: PACKAGES[0],
     customer: {
+      id: "CUS-001",
       name: "Alex Johnson",
       email: "alex@example.com",
       phone: "+1 (555) 123-4567"
@@ -419,8 +420,10 @@ export const ORDERS: Order[] = [
     id: "ORD-2023-002",
     package: PACKAGES[2],
     customer: {
+      id: "CUS-002",
       name: "Sarah Wilson",
       email: "sarah@example.com",
+      phone: "+1 (555) 234-5678"
     },
     orderDate: "2023-11-10",
     status: PROJECT_STATUSES[4],
@@ -476,8 +479,10 @@ export const ORDERS: Order[] = [
     id: "ORD-2023-003",
     package: PACKAGES[1],
     customer: {
+      id: "CUS-003",
       name: "Michael Brown",
       email: "michael@example.com",
+      phone: "+1 (555) 345-6789"
     },
     orderDate: "2023-11-20",
     status: PROJECT_STATUSES[2],
@@ -512,6 +517,124 @@ export const ORDERS: Order[] = [
         description: "Setting up server, database, and APIs",
         status: "pending",
         percentComplete: 30,
+      },
+      {
+        id: "testing",
+        name: "Testing & QA",
+        description: "Quality assurance and bug fixing",
+        status: "not-started",
+        percentComplete: 0,
+      },
+      {
+        id: "deployment",
+        name: "Deployment & Launch",
+        description: "Final deployment and go-live",
+        status: "not-started",
+        percentComplete: 0,
+      },
+    ],
+  },
+  {
+    id: "ORD-2023-004",
+    package: PACKAGES[0],
+    customer: {
+      id: "CUS-004",
+      name: "Jennifer Lee",
+      email: "jennifer@example.com",
+      phone: "+1 (555) 456-7890"
+    },
+    orderDate: "2023-11-22",
+    status: PROJECT_STATUSES[1],
+    totalAmount: 19999,
+    paymentStatus: "pending",
+    estimatedDelivery: "2023-12-28",
+    stages: [
+      {
+        id: "domain-hosting",
+        name: "Domain & Hosting Setup",
+        description: "Registering domain and setting up hosting environment",
+        status: "in-progress",
+        percentComplete: 70,
+      },
+      {
+        id: "design",
+        name: "UI/UX Design",
+        description: "Creating wireframes and design mockups",
+        status: "pending",
+        percentComplete: 20,
+      },
+      {
+        id: "frontend",
+        name: "Frontend Development",
+        description: "Building the user interface and experience",
+        status: "not-started",
+        percentComplete: 0,
+      },
+      {
+        id: "backend",
+        name: "Backend Development",
+        description: "Setting up server, database, and APIs",
+        status: "not-started",
+        percentComplete: 0,
+      },
+      {
+        id: "testing",
+        name: "Testing & QA",
+        description: "Quality assurance and bug fixing",
+        status: "not-started",
+        percentComplete: 0,
+      },
+      {
+        id: "deployment",
+        name: "Deployment & Launch",
+        description: "Final deployment and go-live",
+        status: "not-started",
+        percentComplete: 0,
+      },
+    ],
+  },
+  {
+    id: "ORD-2023-005",
+    package: PACKAGES[2],
+    customer: {
+      id: "CUS-005",
+      name: "David Rodriguez",
+      email: "david@example.com",
+      phone: "+1 (555) 567-8901"
+    },
+    orderDate: "2023-11-25",
+    status: PROJECT_STATUSES[1],
+    totalAmount: 59999,
+    paymentStatus: "paid",
+    estimatedDelivery: "2023-12-30",
+    stages: [
+      {
+        id: "domain-hosting",
+        name: "Domain & Hosting Setup",
+        description: "Registering domain and setting up hosting environment",
+        status: "completed",
+        percentComplete: 100,
+      },
+      {
+        id: "design",
+        name: "UI/UX Design",
+        description: "Creating wireframes and design mockups",
+        status: "in-progress",
+        percentComplete: 80,
+      },
+      {
+        id: "frontend",
+        name: "Frontend Development",
+        description: "Building the user interface and experience",
+        status: "pending",
+        percentComplete: 10,
+      },
+      {
+        id: "backend",
+        name: "Backend Development",
+        description: "Setting up server, database, and APIs",
+        status: "not-started",
+        percentComplete: 0,
       },
       {
         id: "testing",
