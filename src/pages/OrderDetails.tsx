@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppSidebar from '@/components/AppSidebar';
-import { Header } from '@/components/Header';
+import Header from '@/components/Header';
 import OrderSummary from '@/components/OrderSummary';
 import ProjectTimeline from '@/components/ProjectTimeline';
 import DetailedProgressTracker from '@/components/DetailedProgressTracker';
@@ -18,18 +17,57 @@ import { ORDERS } from '@/lib/data';
 import CustomerDataEditor from '@/components/admin/CustomerDataEditor';
 import { useUserStore } from '@/stores/userStore';
 
+interface CustomerRequirement {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+}
+
+interface FeedbackItem {
+  id: string;
+  from: string;
+  message: string;
+  date: string;
+}
+
+interface DomainInfo {
+  name?: string;
+  status?: string;
+  nameservers?: string[];
+  expiryDate?: string;
+}
+
+interface Order {
+  id: string;
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  package: {
+    name: string;
+  };
+  status: string;
+  progress?: any;
+  timeline?: any;
+  requirements?: CustomerRequirement[];
+  feedback?: FeedbackItem[];
+  addOns?: any[];
+  domain?: DomainInfo;
+}
+
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const [order, setOrder] = useState(ORDERS.find(o => o.id === orderId));
+  const [order, setOrder] = useState<Order | undefined>(ORDERS.find(o => o.id === orderId));
   const { profile } = useUserStore();
   const isAdmin = profile?.role === 'admin';
   
   useEffect(() => {
-    // Find order by ID
     const foundOrder = ORDERS.find(o => o.id === orderId);
     setOrder(foundOrder);
     
-    // Scroll to top on page load
     window.scrollTo(0, 0);
   }, [orderId]);
   
@@ -70,7 +108,7 @@ const OrderDetails = () => {
           <OrderSummary order={order} />
           
           <div className="lg:col-span-2">
-            <DetailedProgressTracker progress={order.progress} />
+            {order.progress && <DetailedProgressTracker progress={order.progress} />}
           </div>
         </div>
         
@@ -85,25 +123,25 @@ const OrderDetails = () => {
           </TabsList>
           
           <TabsContent value="timeline" className="pt-4">
-            <ProjectTimeline timeline={order.timeline} />
+            {order.timeline && <ProjectTimeline timeline={order.timeline} />}
           </TabsContent>
           
           <TabsContent value="requirements" className="pt-4">
-            <CustomerRequirements requirements={order.requirements} />
+            {order.requirements && <CustomerRequirements requirements={order.requirements} />}
           </TabsContent>
           
           <TabsContent value="feedback" className="pt-4">
-            <ProjectFeedback feedback={order.feedback} />
+            {order.feedback && <ProjectFeedback feedback={order.feedback} />}
           </TabsContent>
           
           <TabsContent value="addons" className="pt-4">
-            <AddOnManager orderId={order.id} initialAddOns={order.addOns} />
+            {order.addOns && <AddOnManager orderId={order.id} initialAddOns={order.addOns} />}
           </TabsContent>
           
           <TabsContent value="technical" className="pt-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <TechnicalSetupCard order={order} />
-              <HostingStatusCard order={order} />
+              <TechnicalSetupCard orderId={order.id} />
+              <HostingStatusCard orderId={order.id} />
             </div>
             <Separator className="my-8" />
             <Card className="glass-card">
@@ -160,7 +198,6 @@ const OrderDetails = () => {
   );
 };
 
-// Helper component for status badges
 const StatusBadge = ({ 
   status, 
   statusMap = {
