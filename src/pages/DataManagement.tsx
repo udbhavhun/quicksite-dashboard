@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ORDERS } from '@/lib/data';
+import { ORDERS, Order, ProjectStatus } from '@/lib/data';
 import { faqs, documentation, videoTutorials } from '@/lib/support-data';
 import { messages } from '@/lib/message-data';
 import { performanceData, bugReports, featureRequests } from '@/lib/site-data';
@@ -17,11 +17,11 @@ import FeatureRequestManagement from '@/components/data-management/FeatureReques
 import SitePerformanceManagement from '@/components/data-management/SitePerformanceManagement';
 import { useCustomerData } from '@/hooks/use-customer-data';
 
-// Define types for all the data we're managing
-interface Order {
+// Define types for the transformed Orders we'll be using in this component
+interface TransformedOrder {
   id: string;
   customer: {
-    id: string;
+    id?: string;
     name: string;
     email: string;
   };
@@ -33,7 +33,7 @@ interface Order {
 }
 
 // Transform ORDERS to match our Order interface
-const transformOrders = (): Order[] => {
+const transformOrders = (): TransformedOrder[] => {
   return ORDERS.map(order => ({
     id: order.id,
     customer: {
@@ -52,7 +52,7 @@ const transformOrders = (): Order[] => {
 const DataManagement = () => {
   // State for all the data we'll be managing
   const [activeTab, setActiveTab] = useState('customer-data');
-  const [orders, setOrders] = useState<Order[]>(transformOrders());
+  const [orders, setOrders] = useState<TransformedOrder[]>(transformOrders());
   const [messagesList, setMessagesList] = useState(messages);
   const [faqsList, setFaqsList] = useState(faqs);
   const [docsList, setDocsList] = useState(documentation);
