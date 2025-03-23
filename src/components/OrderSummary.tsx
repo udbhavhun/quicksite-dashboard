@@ -51,10 +51,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ orders = [], order }) => {
     );
   }
 
-  // Filter orders based on user role
-  const ordersForCustomer = isAdmin 
+  // Filter orders based on user role - safely check if profile exists first
+  const ordersForCustomer = profile ? (isAdmin 
     ? orders 
-    : orders.filter(order => order.customer.email === profile?.email);
+    : orders.filter(order => order.customer.email === profile.email)
+  ) : [];
 
   // Calculate total orders
   const totalOrders = ordersForCustomer.length;

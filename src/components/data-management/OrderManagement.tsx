@@ -8,8 +8,23 @@ import { Input } from "@/components/ui/input";
 import { toast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
 
-// Define the allowed status colors that match the StatusBadge component
+// Define the allowed status colors for use in the component
 type StatusColor = "error" | "pending" | "blue" | "success" | "warning";
+
+// Helper function to convert a status string to a badge variant
+const getStatusBadgeVariant = (statusColor: StatusColor): "default" | "destructive" | "outline" | "secondary" => {
+  switch(statusColor) {
+    case "error":
+      return "destructive";
+    case "success":
+      return "default";
+    case "warning":
+    case "pending":
+    case "blue":
+    default:
+      return "secondary";
+  }
+};
 
 // Helper function to safely convert a status string to its matching color
 const getStatusColor = (status: string): StatusColor => {
@@ -130,7 +145,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
                     <td className="py-3 px-4">{order.customer.name}</td>
                     <td className="py-3 px-4">{order.package.name}</td>
                     <td className="py-3 px-4">
-                      <Badge variant={getStatusColor(getStatusId(order.status))}>
+                      <Badge variant={getStatusBadgeVariant(getStatusColor(getStatusId(order.status)))}>
                         {getStatusId(order.status)}
                       </Badge>
                     </td>

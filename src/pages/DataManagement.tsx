@@ -12,11 +12,72 @@ import SitePerformanceManagement from '@/components/data-management/SitePerforma
 import SupportContentManagement from '@/components/data-management/support/SupportContentManagement';
 import { useUserStore } from '@/stores/userStore';
 import Header from '@/components/Header';
-import { Order } from '@/lib/data';
-import { getOrders } from '@/lib/data';
-import { getFaqs, getDocumentation, getVideoTutorials, getContactSupport } from '@/lib/support-data';
-import { getMessages } from '@/lib/message-data';
-import { getPerformanceData, getBugReports, getFeatureRequests } from '@/lib/site-data';
+import { Order, ORDERS } from '@/lib/data';
+import { faqs, documentation, videoTutorials } from '@/lib/support-data';
+import { MOCK_MESSAGE_THREADS } from '@/lib/message-data';
+import { mockSites } from '@/lib/site-data';
+
+// Mock data for now - these would eventually come from API calls
+const contactSupport = [
+  {
+    id: 'contact-1',
+    title: 'Customer Support',
+    description: 'Contact our customer support team for general inquiries',
+    email: 'support@example.com',
+    phone: '+1 (555) 123-4567'
+  },
+  {
+    id: 'contact-2',
+    title: 'Technical Support',
+    description: 'Get help with technical issues related to your website',
+    email: 'tech@example.com',
+    phone: '+1 (555) 987-6543'
+  }
+];
+
+const bugReports = [
+  {
+    id: 'bug-1',
+    title: 'Navigation menu not working on mobile',
+    description: 'Users report the hamburger menu does not expand on iOS devices',
+    status: 'open',
+    priority: 'high',
+    reportedBy: 'customer@example.com',
+    reportedDate: '2023-11-25',
+    siteId: 'site-1'
+  },
+  {
+    id: 'bug-2',
+    title: 'Payment form validation error',
+    description: 'Credit card validation displays incorrect error message',
+    status: 'in-progress',
+    priority: 'critical',
+    reportedBy: 'sarah@example.com',
+    reportedDate: '2023-11-22',
+    siteId: 'site-2'
+  }
+];
+
+const featureRequests = [
+  {
+    id: 'feature-1',
+    title: 'Dark mode support',
+    description: 'Add dark mode theme option for all customer websites',
+    status: 'under-review',
+    votes: 24,
+    requestedBy: 'multiple-users',
+    requestedDate: '2023-11-10'
+  },
+  {
+    id: 'feature-2',
+    title: 'Social media integration',
+    description: 'Add direct posting to social media from the CMS',
+    status: 'planned',
+    votes: 18,
+    requestedBy: 'customer@example.com',
+    requestedDate: '2023-11-15'
+  }
+];
 
 interface DeleteConfirmProps {
   open: boolean;
@@ -47,15 +108,15 @@ const DeleteConfirmDialog: React.FC<DeleteConfirmProps> = ({ open, onClose, onCo
 const DataManagement: React.FC = () => {
   const { profile } = useUserStore();
   const [activeTab, setActiveTab] = useState("orders");
-  const [orders, setOrders] = useState<Order[]>(getOrders());
-  const [messages, setMessages] = useState(getMessages());
-  const [performanceData, setPerformanceData] = useState(getPerformanceData());
-  const [bugReports, setBugReports] = useState(getBugReports());
-  const [featureRequests, setFeatureRequests] = useState(getFeatureRequests());
-  const [faqs, setFaqs] = useState(getFaqs());
-  const [docs, setDocs] = useState(getDocumentation());
-  const [videos, setVideos] = useState(getVideoTutorials());
-  const [contactSupport, setContactSupport] = useState(getContactSupport());
+  const [orders, setOrders] = useState<Order[]>(ORDERS);
+  const [messages, setMessages] = useState(MOCK_MESSAGE_THREADS);
+  const [performanceData, setPerformanceData] = useState(mockSites);
+  const [bugsData, setBugsData] = useState(bugReports);
+  const [featureRequestsData, setFeatureRequestsData] = useState(featureRequests);
+  const [faqsData, setFaqsData] = useState(faqs);
+  const [docsData, setDocsData] = useState(documentation);
+  const [videosData, setVideosData] = useState(videoTutorials);
+  const [contactSupportData, setContactSupportData] = useState(contactSupport);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState({ id: '', type: '' });
@@ -95,7 +156,7 @@ const DataManagement: React.FC = () => {
     } else if (type === 'message') {
       setMessages(messages.filter(message => message.id !== id));
     } else if (type === 'feature') {
-      setFeatureRequests(featureRequests.filter(feature => feature.id !== id));
+      setFeatureRequestsData(featureRequestsData.filter(feature => feature.id !== id));
     }
     
     toast({
@@ -108,8 +169,8 @@ const DataManagement: React.FC = () => {
 
   return (
     <>
-      <Header title="Data Management" />
       <div className="container py-6">
+        <h1 className="text-3xl font-bold mb-6">Data Management</h1>
         <Card className="mb-6 glass-card">
           <CardHeader>
             <CardTitle>Admin Control Panel</CardTitle>
@@ -129,30 +190,54 @@ const DataManagement: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="messages" className="mt-6">
-                <MessageManagement messages={messages} />
+                <MessageManagement />
               </TabsContent>
               
               <TabsContent value="features" className="mt-6">
-                <FeatureRequestManagement featureRequests={featureRequests} />
+                <FeatureRequestManagement />
               </TabsContent>
               
               <TabsContent value="performance" className="mt-6">
-                <SitePerformanceManagement 
-                  performanceData={performanceData} 
-                  bugReports={bugReports} 
-                />
+                <SitePerformanceManagement />
               </TabsContent>
               
               <TabsContent value="support" className="mt-6">
                 <SupportContentManagement 
-                  faqs={faqs}
-                  docs={docs}
-                  videos={videos}
-                  contactSupport={contactSupport}
-                  setFaqs={setFaqs}
-                  setDocs={setDocs}
-                  setVideos={setVideos}
-                  setContactSupport={setContactSupport}
+                  faqs={faqsData}
+                  docs={docsData}
+                  videos={videosData}
+                  contactSupport={contactSupportData}
+                  onUpdateFaq={(updatedFaq) => {
+                    setFaqsData(faqsData.map(faq => faq.id === updatedFaq.id ? updatedFaq : faq));
+                  }}
+                  onUpdateDoc={(updatedDoc) => {
+                    setDocsData(docsData.map(doc => doc.id === updatedDoc.id ? updatedDoc : doc));
+                  }}
+                  onUpdateVideo={(updatedVideo) => {
+                    setVideosData(videosData.map(video => video.id === updatedVideo.id ? updatedVideo : video));
+                  }}
+                  onUpdateContactSupport={(updatedContact) => {
+                    setContactSupportData(contactSupportData.map(contact => 
+                      contact.id === updatedContact.id ? updatedContact : contact
+                    ));
+                  }}
+                  onDeleteFaq={(id) => {
+                    setFaqsData(faqsData.filter(faq => faq.id !== id));
+                  }}
+                  onDeleteDoc={(id) => {
+                    setDocsData(docsData.filter(doc => doc.id !== id));
+                  }}
+                  onDeleteVideo={(id) => {
+                    setVideosData(videosData.filter(video => video.id !== id));
+                  }}
+                  onDeleteContactSupport={(id) => {
+                    setContactSupportData(contactSupportData.filter(contact => contact.id !== id));
+                  }}
+                  setIsAddFaqOpen={() => {}}
+                  setIsAddDocOpen={() => {}}
+                  setIsAddVideoOpen={() => {}}
+                  setIsAddContactOpen={() => {}}
+                  setItemToDelete={setItemToDelete}
                 />
               </TabsContent>
             </Tabs>

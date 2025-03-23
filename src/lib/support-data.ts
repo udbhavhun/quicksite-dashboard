@@ -1,5 +1,36 @@
 
-export const faqs = [
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category?: string;
+}
+
+export interface DocumentationItem {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  category?: string;
+}
+
+export interface VideoTutorialItem {
+  id: string;
+  title: string;
+  duration: string;
+  thumbnail: string;
+  link: string;
+}
+
+export interface ContactSupportItem {
+  id: string;
+  title: string;
+  description: string;
+  email: string;
+  phone?: string;
+}
+
+export const faqs: FAQItem[] = [
   {
     id: 'faq-1',
     question: 'How do I track my website build progress?',
@@ -32,7 +63,7 @@ export const faqs = [
   }
 ];
 
-export const documentation = [
+export const documentation: DocumentationItem[] = [
   {
     id: 'doc-1',
     title: 'Getting Started Guide',
@@ -71,7 +102,7 @@ export const documentation = [
   }
 ];
 
-export const videoTutorials = [
+export const videoTutorials: VideoTutorialItem[] = [
   {
     id: 'video-1',
     title: 'Dashboard Overview',
