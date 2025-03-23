@@ -1,290 +1,274 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Edit, Save, Trash2, Check, ShoppingCart, CreditCard } from 'lucide-react';
-import { useUserStore } from '@/stores/userStore';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Check, X, Edit, Trash } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-interface AddOn {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  status: 'available' | 'purchased' | 'pending';
-}
-
-interface AddOnManagerProps {
+export interface AddOnManagerProps {
   orderId: string;
-  userType: 'customer' | 'admin';
+  userType: 'admin' | 'customer' | null;
 }
 
-const AddOnManager: React.FC<AddOnManagerProps> = ({ orderId, userType }) => {
+const AddOnManager: React.FC<AddOnManagerProps> = ({ 
+  orderId, 
+  userType = 'customer'
+}) => {
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [selectedAddOn, setSelectedAddOn] = useState<AddOn | null>(null);
-  
-  // Sample data - in a real app, this would come from an API
-  const [addOns, setAddOns] = useState<AddOn[]>([
+  const [addOns, setAddOns] = useState<any[]>([
     {
-      id: 'addon-1',
-      name: 'SEO Optimization',
-      description: 'Comprehensive SEO setup including meta tags, sitemap, and search engine submission.',
-      price: 4999,
-      status: 'available'
+      id: '1',
+      name: 'Additional Page',
+      description: 'Add an extra page to your website with custom content.',
+      price: 49.99,
+      status: 'active'
     },
     {
-      id: 'addon-2',
-      name: 'Content Management System',
-      description: 'Custom CMS integration allowing you to manage your website content without technical knowledge.',
-      price: 7999,
-      status: 'purchased'
-    },
-    {
-      id: 'addon-3',
-      name: 'Social Media Integration',
-      description: 'Connect your website with social media platforms for enhanced engagement.',
-      price: 2999,
-      status: 'available'
+      id: '2',
+      name: 'SEO Package',
+      description: 'Basic SEO optimization package for better search rankings.',
+      price: 199.99,
+      status: 'pending'
     }
   ]);
   
-  const [editableAddOns, setEditableAddOns] = useState<AddOn[]>(addOns);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAddOn, setEditingAddOn] = useState<any | null>(null);
+  const [newAddOn, setNewAddOn] = useState({
+    name: '',
+    description: '',
+    price: 0
+  });
   
-  const handleEditToggle = () => {
-    if (isEditing) {
-      // Save changes
-      setAddOns(editableAddOns);
+  const handleAddNew = () => {
+    setEditingAddOn(null);
+    setNewAddOn({
+      name: '',
+      description: '',
+      price: 0
+    });
+    setDialogOpen(true);
+  };
+  
+  const handleEdit = (addOn: any) => {
+    setEditingAddOn(addOn);
+    setNewAddOn({
+      name: addOn.name,
+      description: addOn.description,
+      price: addOn.price
+    });
+    setDialogOpen(true);
+  };
+  
+  const handleDelete = (id: string) => {
+    setAddOns(addOns.filter(addon => addon.id !== id));
+    toast({
+      title: "Add-on removed",
+      description: "The add-on has been successfully removed.",
+    });
+  };
+  
+  const handleSave = () => {
+    if (!newAddOn.name) {
       toast({
-        title: "Changes saved",
-        description: "Add-ons have been updated successfully.",
+        title: "Validation Error",
+        description: "Please enter a name for the add-on.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (editingAddOn) {
+      // Update existing add-on
+      setAddOns(addOns.map(addon => 
+        addon.id === editingAddOn.id 
+          ? { ...addon, ...newAddOn } 
+          : addon
+      ));
+      toast({
+        title: "Add-on updated",
+        description: "The add-on has been successfully updated.",
+      });
+    } else {
+      // Add new add-on
+      const newId = Math.random().toString(36).substring(2, 9);
+      setAddOns([...addOns, {
+        id: newId,
+        ...newAddOn,
+        status: 'pending'
+      }]);
+      toast({
+        title: "Add-on created",
+        description: "The new add-on has been successfully created.",
       });
     }
-    setIsEditing(!isEditing);
+    
+    setDialogOpen(false);
   };
   
-  const updateAddOn = (id: string, field: string, value: any) => {
-    setEditableAddOns(prev => 
-      prev.map(addon => 
-        addon.id === id ? { ...addon, [field]: value } : addon
-      )
-    );
-  };
-  
-  const addNewAddOn = () => {
-    const newAddOn: AddOn = {
-      id: `addon-${Date.now()}`,
-      name: 'New Add-on',
-      description: 'Description of the new add-on',
-      price: 999,
-      status: 'available'
-    };
-    setEditableAddOns([...editableAddOns, newAddOn]);
-  };
-  
-  const removeAddOn = (id: string) => {
-    setEditableAddOns(editableAddOns.filter(addon => addon.id !== id));
-  };
-  
-  const handlePurchase = (addon: AddOn) => {
-    setSelectedAddOn(addon);
-    setShowCheckout(true);
-  };
-  
-  const completeCheckout = () => {
-    if (selectedAddOn) {
-      setAddOns(prev => 
-        prev.map(addon => 
-          addon.id === selectedAddOn.id 
-            ? { ...addon, status: 'purchased' } 
-            : addon
-        )
-      );
-      
-      toast({
-        title: "Purchase Complete",
-        description: `You have successfully purchased the ${selectedAddOn.name} add-on.`,
-      });
-      
-      setShowCheckout(false);
-      setSelectedAddOn(null);
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge variant="default" className="bg-green-500">Active</Badge>;
+      case 'pending':
+        return <Badge variant="outline" className="text-amber-500 border-amber-500">Pending</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive">Cancelled</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
   
   return (
-    <div className="space-y-6">
-      {/* Header section with title and controls */}
-      <div className="flex justify-between items-center">
-        <p className="text-gray-600">Enhance your project with these additional features.</p>
-        
-        {userType === 'admin' && (
-          <Button
-            variant={isEditing ? "default" : "outline"}
-            size="sm"
-            onClick={handleEditToggle}
-            className={isEditing ? "bg-quicksite-blue text-white" : ""}
-          >
-            {isEditing ? (
-              <>
-                <Save size={14} className="mr-1.5" />
-                Save Changes
-              </>
-            ) : (
-              <>
-                <Edit size={14} className="mr-1.5" />
-                Edit Add-ons
-              </>
-            )}
-          </Button>
-        )}
-      </div>
+    <div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Add-on Services</CardTitle>
+          {userType === 'admin' && (
+            <Button size="sm" onClick={handleAddNew}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add New
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {addOns.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No add-ons have been added to this order yet.</p>
+              {userType === 'admin' && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={handleAddNew}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Your First Add-on
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {addOns.map((addon) => (
+                <Card key={addon.id} className="overflow-hidden">
+                  <div className="p-5 border-b border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">{addon.name}</h3>
+                      {getStatusBadge(addon.status)}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">{addon.description}</p>
+                    <div className="mt-3">
+                      <span className="text-lg font-semibold">${addon.price.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  {userType === 'admin' && (
+                    <div className="bg-gray-50 px-5 py-3 flex justify-end space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEdit(addon)}
+                      >
+                        <Edit className="mr-1 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDelete(addon.id)}
+                      >
+                        <Trash className="mr-1 h-4 w-4" />
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+                  {userType === 'customer' && addon.status === 'pending' && (
+                    <div className="bg-gray-50 px-5 py-3 flex justify-end space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Request sent",
+                          description: "Your request has been submitted to our team.",
+                        })}
+                      >
+                        <Check className="mr-1 h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Add-on declined",
+                          description: "You have declined this add-on service.",
+                        })}
+                      >
+                        <X className="mr-1 h-4 w-4" />
+                        Decline
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
       
-      {/* Checkout modal */}
-      {showCheckout && selectedAddOn && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-2xl p-6 max-w-md w-full m-4"
-          >
-            <h3 className="text-xl font-semibold mb-4">Purchase Add-on</h3>
-            <div className="border rounded-lg p-4 mb-4">
-              <h4 className="font-medium">{selectedAddOn.name}</h4>
-              <p className="text-sm text-gray-600 my-2">{selectedAddOn.description}</p>
-              <p className="text-lg font-semibold text-quicksite-blue">₹{selectedAddOn.price.toLocaleString()}</p>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingAddOn ? 'Edit Add-on' : 'Add New Add-on'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input 
+                id="name" 
+                value={newAddOn.name}
+                onChange={(e) => setNewAddOn({...newAddOn, name: e.target.value})}
+              />
             </div>
             
-            <div className="mb-4">
-              <h4 className="text-sm font-medium mb-2">Payment Method</h4>
-              <div className="border rounded-lg p-3 bg-gray-50 flex items-center">
-                <CreditCard size={20} className="mr-2 text-gray-700" />
-                <span>Credit/Debit Card (ending in 4242)</span>
-                <span className="ml-auto text-xs bg-gray-200 px-2 py-0.5 rounded">Default</span>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                value={newAddOn.description}
+                onChange={(e) => setNewAddOn({...newAddOn, description: e.target.value})}
+              />
             </div>
             
-            <div className="flex justify-end space-x-3 mt-6">
-              <Button variant="outline" onClick={() => setShowCheckout(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={completeCheckout}
-                className="bg-quicksite-blue hover:bg-quicksite-dark-blue"
-              >
-                <Check size={16} className="mr-2" />
-                Complete Purchase
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price ($)</Label>
+              <Input 
+                id="price" 
+                type="number"
+                value={newAddOn.price}
+                onChange={(e) => setNewAddOn({...newAddOn, price: parseFloat(e.target.value)})}
+              />
             </div>
-          </motion.div>
-        </div>
-      )}
-      
-      {/* Add-ons list */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(isEditing ? editableAddOns : addOns).map((addon) => (
-          <motion.div
-            key={addon.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
-          >
-            {isEditing ? (
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <Input 
-                    value={addon.name}
-                    onChange={(e) => updateAddOn(addon.id, 'name', e.target.value)}
-                    className="font-medium mb-2"
-                  />
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => removeAddOn(addon.id)}
-                    className="text-red-500 p-1 h-auto"
-                  >
-                    <Trash2 size={16} />
-                  </Button>
-                </div>
-                
-                <Textarea
-                  value={addon.description}
-                  onChange={(e) => updateAddOn(addon.id, 'description', e.target.value)}
-                  className="text-sm text-gray-600 mb-2 min-h-[100px]"
-                  placeholder="Description"
-                />
-                
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">₹</span>
-                  <Input
-                    type="number"
-                    value={addon.price}
-                    onChange={(e) => updateAddOn(addon.id, 'price', parseFloat(e.target.value))}
-                    className="font-semibold"
-                  />
-                </div>
-                
-                <div className="mt-2">
-                  <select
-                    value={addon.status}
-                    onChange={(e) => updateAddOn(addon.id, 'status', e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="available">Available</option>
-                    <option value="purchased">Purchased</option>
-                    <option value="pending">Pending</option>
-                  </select>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-medium">{addon.name}</h3>
-                  {addon.status === 'purchased' && (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
-                      Purchased
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 my-2 line-clamp-3">{addon.description}</p>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="font-semibold text-quicksite-blue">₹{addon.price.toLocaleString()}</span>
-                  {userType === 'customer' && addon.status === 'available' && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => handlePurchase(addon)}
-                      className="bg-quicksite-blue hover:bg-quicksite-dark-blue"
-                    >
-                      <ShoppingCart size={14} className="mr-1.5" />
-                      Purchase
-                    </Button>
-                  )}
-                  {addon.status === 'purchased' && (
-                    <Check size={18} className="text-green-600" />
-                  )}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        ))}
-        
-        {isEditing && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="border border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center text-center h-full min-h-[200px] cursor-pointer hover:bg-gray-50 transition-colors"
-            onClick={addNewAddOn}
-          >
-            <div className="w-12 h-12 rounded-full bg-quicksite-blue/10 flex items-center justify-center mb-2">
-              <Plus size={24} className="text-quicksite-blue" />
-            </div>
-            <h3 className="font-medium">Add New Add-on</h3>
-            <p className="text-sm text-gray-600 mt-1">Create a new purchasable feature</p>
-          </motion.div>
-        )}
-      </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>
+              {editingAddOn ? 'Update' : 'Add'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

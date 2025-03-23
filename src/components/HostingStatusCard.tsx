@@ -5,7 +5,7 @@ import { Server, Globe, Shield, Cpu, BarChart, Zap, ExternalLink } from 'lucide-
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
-interface HostingStatusCardProps {
+export interface HostingStatusCardProps {
   domainName: string;
   isSSLActive: boolean;
   diskUsage: number;
@@ -15,12 +15,12 @@ interface HostingStatusCardProps {
 }
 
 const HostingStatusCard: React.FC<HostingStatusCardProps> = ({
-  domainName,
-  isSSLActive,
-  diskUsage,
-  bandwidthUsage,
-  serverLocation,
-  uptime
+  domainName = "example.com",
+  isSSLActive = true,
+  diskUsage = 23,
+  bandwidthUsage = 7.2,
+  serverLocation = "US East (N. Virginia)",
+  uptime = 99.9
 }) => {
   return (
     <div className="glass-card p-6">

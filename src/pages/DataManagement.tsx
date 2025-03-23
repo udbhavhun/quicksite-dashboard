@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { ORDERS, Order, ProjectStatus } from '@/lib/data';
-import { faqs, documentation, videoTutorials } from '@/lib/support-data';
+import { ORDERS, Order, PROJECT_STATUSES } from '@/lib/data';
 import { messages } from '@/lib/message-data';
 import { performanceData, bugReports, featureRequests } from '@/lib/site-data';
+import { faqs, documentation, videoTutorials } from '@/lib/support-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { useCustomerData } from '@/hooks/use-customer-data';
 interface TransformedOrder {
   id: string;
   customer: {
-    id?: string;
+    id: string;
     name: string;
     email: string;
   };
@@ -37,7 +37,7 @@ const transformOrders = (): TransformedOrder[] => {
   return ORDERS.map(order => ({
     id: order.id,
     customer: {
-      id: order.customer.id || 'unknown', // Provide default if missing
+      id: order.customer.id || 'unknown',
       name: order.customer.name,
       email: order.customer.email
     },
@@ -164,7 +164,7 @@ const DataManagement = () => {
           
           <TabsContent value="orders">
             <OrderManagement 
-              orders={transformOrders()}
+              orders={orders}
               onSelectCustomerOrder={handleSelectCustomerOrder}
             />
           </TabsContent>
@@ -182,7 +182,16 @@ const DataManagement = () => {
           </TabsContent>
           
           <TabsContent value="support">
-            <SupportContentManagement />
+            <SupportContentManagement 
+              faqs={faqsList}
+              docs={docsList}
+              videos={videosList}
+              contactSupport={contactSupportList}
+              onUpdateFaqs={setFaqsList}
+              onUpdateDocs={setDocsList}
+              onUpdateVideos={setVideosList}
+              onUpdateContactSupport={setContactSupportList}
+            />
           </TabsContent>
         </Tabs>
       </div>

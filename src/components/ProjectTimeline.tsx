@@ -1,196 +1,125 @@
 
 import React, { useState } from 'react';
-import { Order, StageUpdate } from '@/lib/data';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MessageSquare, FileText, Link, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
-import StatusBadge from './StatusBadge';
+import { Order, ProjectStage } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Calendar, Clock, FileText, MessageSquare } from 'lucide-react';
 
-interface ProjectTimelineProps {
+export interface ProjectTimelineProps {
   order: Order;
 }
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ order }) => {
-  const [expandedUpdates, setExpandedUpdates] = useState<Record<string, boolean>>({});
+  const stages = order.stages || [];
   
-  const toggleUpdate = (stageId: string) => {
-    setExpandedUpdates(prev => ({
-      ...prev,
-      [stageId]: !prev[stageId]
-    }));
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    });
   };
   
-  // Create a timeline of events based on stages
-  const timelineEvents = order.stages.map(stage => {
-    let date = "";
-    let status = "";
-    
-    // Mock dates based on status
-    if (stage.status === 'completed') {
-      // Random date between order date and now
-      const orderDate = new Date(order.orderDate);
-      const now = new Date();
-      const randomTime = orderDate.getTime() + Math.random() * (now.getTime() - orderDate.getTime());
-      date = new Date(randomTime).toLocaleDateString('en-US', { 
-        day: 'numeric', month: 'short', year: 'numeric' 
-      });
-      status = 'Completed';
-    } else if (stage.status === 'in-progress') {
-      date = 'In progress';
-      status = 'Active';
-    } else if (stage.status === 'pending') {
-      date = 'Pending input';
-      status = 'Waiting';
-    } else {
-      date = 'Upcoming';
-      status = 'Not started';
+  // Format time helper
+  const formatTime = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+  };
+  
+  // Get icon for update type
+  const getUpdateIcon = (type: string) => {
+    switch(type) {
+      case 'message':
+        return <MessageSquare className="h-4 w-4 text-blue-500" />;
+      case 'file':
+        return <FileText className="h-4 w-4 text-purple-500" />;
+      case 'update':
+      default:
+        return <Clock className="h-4 w-4 text-green-500" />;
     }
-    
-    return {
-      stage,
-      date,
-      status
-    };
-  });
+  };
   
   return (
-    <div className="bg-white/80 backdrop-blur-lg rounded-2xl border border-white/30 shadow-lg p-6">
-      <h3 className="text-xl font-semibold mb-6">Project Timeline</h3>
-      
-      <div className="space-y-10">
-        {timelineEvents.map((event, index) => (
-          <div key={event.stage.id} className="relative">
-            {/* Timeline connector */}
-            {index < timelineEvents.length - 1 && (
-              <div 
-                className={`absolute top-6 left-3 w-0.5 h-[calc(100%+2.5rem)] ${
-                  event.stage.status === 'completed' ? 'bg-quicksite-success/30' : 
-                  event.stage.status === 'in-progress' ? 'bg-quicksite-blue/30' : 
-                  'bg-gray-200'
-                }`}
-              ></div>
-            )}
-            
-            <div className="flex">
-              {/* Timeline dot */}
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                className={`relative z-10 w-6 h-6 rounded-full flex-shrink-0 mr-4 ${
-                  event.stage.status === 'completed' ? 'bg-quicksite-success' : 
-                  event.stage.status === 'in-progress' ? 'bg-quicksite-blue' : 
-                  event.stage.status === 'pending' ? 'bg-quicksite-warning' :
-                  'bg-gray-200'
-                }`}
-              >
-                {event.stage.status === 'in-progress' && (
-                  <span className="absolute top-0 left-0 w-full h-full rounded-full bg-quicksite-blue/30 animate-ping"></span>
+    <Card className="shadow-md">
+      <CardHeader>
+        <CardTitle>Project Timeline</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="relative pl-6 border-l-2 border-gray-200 space-y-10">
+          {stages.map((stage) => (
+            <div key={stage.id} className="relative">
+              <div className="absolute -left-[25px] top-0 w-6 h-6 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center">
+                {stage.status === 'completed' ? (
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                ) : stage.status === 'in-progress' ? (
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                ) : (
+                  <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
                 )}
-              </motion.div>
-              
-              <div className="flex-grow">
-                <motion.div 
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.2 + 0.1 }}
-                >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-1">
-                    <h4 className="font-medium">{event.stage.name}</h4>
-                    <span className={`text-sm mt-1 sm:mt-0 ${
-                      event.stage.status === 'completed' ? 'text-quicksite-success' : 
-                      event.stage.status === 'in-progress' ? 'text-quicksite-blue' : 
-                      event.stage.status === 'pending' ? 'text-quicksite-warning' :
-                      'text-gray-500'
-                    }`}>
-                      <Calendar size={14} className="inline mr-1" />
-                      {event.date}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 mb-2">{event.stage.description}</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <StatusBadge status={event.stage.status} size="sm" />
-                    
-                    {event.stage.updates && event.stage.updates.length > 0 && (
-                      <button 
-                        onClick={() => toggleUpdate(event.stage.id)}
-                        className="text-xs text-quicksite-blue flex items-center ml-2 micro-bounce"
-                      >
-                        {expandedUpdates[event.stage.id] ? (
-                          <>Hide Updates <ChevronUp size={14} className="ml-1" /></>
-                        ) : (
-                          <>Show Updates ({event.stage.updates.length}) <ChevronDown size={14} className="ml-1" /></>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                  
-                  <AnimatePresence>
-                    {expandedUpdates[event.stage.id] && event.stage.updates && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-4 space-y-3 pl-2 border-l-2 border-dashed border-gray-200">
-                          {event.stage.updates.map((update, idx) => (
-                            <motion.div 
-                              key={idx}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.3, delay: idx * 0.1 }}
-                              className="bg-gray-50 rounded-lg p-3 border border-gray-100"
-                            >
-                              <div className="flex justify-between mb-1">
-                                <span className="text-xs font-medium">{update.title}</span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(update.date).toLocaleDateString('en-US', { 
-                                    day: 'numeric', month: 'short'
-                                  })}
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-600 mb-2">{update.description}</p>
-                              
-                              <div className="flex flex-wrap gap-2">
-                                {update.type === 'message' && (
-                                  <div className="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                    <MessageSquare size={12} className="mr-1" /> Message
-                                  </div>
-                                )}
-                                
-                                {update.type === 'file' && (
-                                  <div className="inline-flex items-center text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded">
-                                    <FileText size={12} className="mr-1" /> File
-                                  </div>
-                                )}
-                                
-                                {update.link && (
-                                  <a 
-                                    href={update.link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded"
-                                  >
-                                    <ExternalLink size={12} className="mr-1" /> View
-                                  </a>
-                                )}
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
               </div>
+              
+              <div className="mb-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">{stage.name}</h3>
+                  <Badge 
+                    variant={
+                      stage.status === 'completed' ? 'default' : 
+                      stage.status === 'in-progress' ? 'secondary' : 
+                      'outline'
+                    }
+                  >
+                    {stage.status.charAt(0).toUpperCase() + stage.status.slice(1).replace('-', ' ')}
+                  </Badge>
+                </div>
+                <p className="text-gray-500 text-sm mt-1">{stage.description}</p>
+              </div>
+              
+              {stage.updates && stage.updates.length > 0 && (
+                <div className="border rounded-md p-4 bg-gray-50 mt-4">
+                  <h4 className="text-sm font-medium mb-3">Updates</h4>
+                  <div className="space-y-4">
+                    {stage.updates.map((update, index) => (
+                      <React.Fragment key={index}>
+                        {index > 0 && <Separator className="my-3" />}
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            {getUpdateIcon(update.type)}
+                            <span className="font-medium text-sm">{update.title}</span>
+                            <div className="flex items-center ml-auto text-xs text-gray-500">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              <span>{formatDate(update.date)}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 ml-6">{update.description}</p>
+                          {update.link && (
+                            <a 
+                              href={update.link} 
+                              className="text-xs text-blue-500 hover:underline ml-6 block mt-1"
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              View attachment →
+                            </a>
+                          )}
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Order, ProjectStatus } from '@/lib/data';
 import { Input } from "@/components/ui/input";
 import { toast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
@@ -51,7 +50,7 @@ const getStatusColor = (status: string): StatusColor => {
 };
 
 // Helper function to safely get status ID
-const getStatusId = (status: ProjectStatus | string | undefined): string => {
+const getStatusId = (status: any): string => {
   if (!status) return '';
   
   if (typeof status === 'object' && status.id) {
@@ -61,13 +60,31 @@ const getStatusId = (status: ProjectStatus | string | undefined): string => {
   return String(status);
 };
 
-interface OrderManagementProps {
-  orders: Order[];
+interface TransformedOrder {
+  id: string;
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  status: string;
+  package: {
+    name: string;
+    price: number;
+  };
 }
 
-const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
+interface OrderManagementProps {
+  orders: TransformedOrder[];
+  onSelectCustomerOrder?: (customerId?: string, orderId?: string) => void;
+}
+
+const OrderManagement: React.FC<OrderManagementProps> = ({ 
+  orders,
+  onSelectCustomerOrder
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>(orders);
+  const [filteredOrders, setFilteredOrders] = useState<TransformedOrder[]>(orders);
 
   React.useEffect(() => {
     if (!orders) {
@@ -93,7 +110,11 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id: string, customerId?: string) => {
+    if (onSelectCustomerOrder) {
+      onSelectCustomerOrder(customerId, id);
+    }
+    
     toast({
       title: "Edit Order",
       description: `Edit order with ID: ${id}`,
@@ -132,7 +153,6 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
                 <th className="text-left py-3 px-4">Customer</th>
                 <th className="text-left py-3 px-4">Package</th>
                 <th className="text-left py-3 px-4">Status</th>
-                <th className="text-left py-3 px-4">Date</th>
                 <th className="text-left py-3 px-4">Price</th>
                 <th className="text-right py-3 px-4">Actions</th>
               </tr>
@@ -149,12 +169,14 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ orders }) => {
                         {getStatusId(order.status)}
                       </Badge>
                     </td>
-                    <td className="py-3 px-4">
-                      {order.orderDate ? new Date(order.orderDate).toLocaleDateString() : 'N/A'}
-                    </td>
                     <td className="py-3 px-4">${order.package.price.toFixed(2)}</td>
                     <td className="py-3 px-4 text-right">
-                      <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEdit(order.id)}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mr-2" 
+                        onClick={() => handleEdit(order.id, order.customer.id)}
+                      >
                         Edit
                       </Button>
                       <Button variant="destructive" size="sm" onClick={() => handleDelete(order.id)}>

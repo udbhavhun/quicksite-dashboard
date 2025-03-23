@@ -19,7 +19,7 @@ import CustomerDataEditor from '@/components/admin/CustomerDataEditor';
 import { useUserStore } from '@/stores/userStore';
 
 // Define types to match component props
-interface Order {
+interface OrderInterface {
   id: string;
   customer: {
     id: string;
@@ -45,7 +45,7 @@ interface Order {
 }
 
 // Transform ORDERS data to match our interface
-const transformOrder = (originalOrder: any): Order | undefined => {
+const transformOrder = (originalOrder: any): OrderInterface | undefined => {
   if (!originalOrder) return undefined;
   
   return {
@@ -72,7 +72,7 @@ const transformOrder = (originalOrder: any): Order | undefined => {
 const OrderDetails = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const originalOrder = ORDERS.find(o => o.id === orderId);
-  const [order, setOrder] = useState<Order | undefined>(transformOrder(originalOrder));
+  const [order, setOrder] = useState<OrderInterface | undefined>(transformOrder(originalOrder));
   const { profile } = useUserStore();
   const isAdmin = profile?.role === 'admin';
   
@@ -120,7 +120,9 @@ const OrderDetails = () => {
           <OrderSummary order={originalOrder} />
           
           <div className="lg:col-span-2">
-            {order.progress && <DetailedProgressTracker />}
+            {originalOrder && originalOrder.stages && (
+              <DetailedProgressTracker stages={originalOrder.stages} />
+            )}
           </div>
         </div>
         
@@ -135,19 +137,30 @@ const OrderDetails = () => {
           </TabsList>
           
           <TabsContent value="timeline" className="pt-4">
-            {order.timeline && <ProjectTimeline />}
+            {originalOrder && originalOrder.stages && (
+              <ProjectTimeline order={originalOrder} />
+            )}
           </TabsContent>
           
           <TabsContent value="requirements" className="pt-4">
-            {order.requirements && <CustomerRequirements />}
+            {originalOrder && originalOrder.requirements && (
+              <CustomerRequirements order={originalOrder} />
+            )}
           </TabsContent>
           
           <TabsContent value="feedback" className="pt-4">
-            {order.feedback && <ProjectFeedback />}
+            {originalOrder && originalOrder.feedback && (
+              <ProjectFeedback order={originalOrder} />
+            )}
           </TabsContent>
           
           <TabsContent value="addons" className="pt-4">
-            {order.addOns && <AddOnManager orderId={order.id} />}
+            {originalOrder && (
+              <AddOnManager 
+                orderId={order.id} 
+                userType={profile?.role || 'customer'}
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="technical" className="pt-4">
@@ -157,10 +170,17 @@ const OrderDetails = () => {
                 isSSLActive={true}
                 diskUsage={0}
                 bandwidthUsage={0}
-                lastBackup="N/A"
+                uptime={99.9}
+                serverLocation="US East (N. Virginia)"
+              />
+              <HostingStatusCard 
+                domainName={order.domain?.name || "Not configured"}
+                isSSLActive={true}
+                diskUsage={0}
+                bandwidthUsage={0}
+                serverLocation="US East (N. Virginia)"
                 uptime={99.9}
               />
-              <HostingStatusCard />
             </div>
             <Separator className="my-8" />
             <Card className="glass-card">

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { CustomerDataEntry } from '@/hooks/use-customer-data';
 import { Search, Edit, Check, X, Trash, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface CustomerDataManagementProps {
+export interface CustomerDataManagementProps {
   data: CustomerDataEntry[];
   updateData: (id: string, newValue: any) => Promise<boolean>;
   createData: (newData: Omit<CustomerDataEntry, 'id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
@@ -76,7 +77,7 @@ const CustomerDataManagement: React.FC<CustomerDataManagementProps> = ({
     }
     
     const newData = {
-      user_id: '', // You might want to fetch and set the current user's ID here
+      user_id: selectedCustomerId || '', 
       order_id: selectedOrderId,
       content_type: newContentType,
       content_key: newContentKey,
@@ -100,7 +101,7 @@ const CustomerDataManagement: React.FC<CustomerDataManagementProps> = ({
   
   return (
     <Card className="shadow-md">
-      <CardHeader className="flex items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Customer Data Management</CardTitle>
         <div className="flex items-center space-x-4">
           <div className="relative w-64">
@@ -138,46 +139,54 @@ const CustomerDataManagement: React.FC<CustomerDataManagementProps> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredData.map(item => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.content_type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.content_key}</td>
-                  <td className="px-6 py-4">
-                    {isEditing === item.id ? (
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          type="text"
-                          value={editedValue}
-                          onChange={e => setEditedValue(e.target.value)}
-                        />
-                        <Button size="sm" onClick={() => handleSaveEdit(item.id)}>
-                          <Check className="h-4 w-4 mr-2" />
-                          Save
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={handleCancelEdit}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      String(item.content_value)
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    {isEditing === item.id ? null : (
-                      <div className="flex justify-end space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(item.id, item.content_value)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
-                          <Trash className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                      </div>
-                    )}
+              {filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                    No data found. Please add some data or adjust your search query.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredData.map(item => (
+                  <tr key={item.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{item.content_type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{item.content_key}</td>
+                    <td className="px-6 py-4">
+                      {isEditing === item.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="text"
+                            value={editedValue}
+                            onChange={e => setEditedValue(e.target.value)}
+                          />
+                          <Button size="sm" onClick={() => handleSaveEdit(item.id)}>
+                            <Check className="h-4 w-4 mr-2" />
+                            Save
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={handleCancelEdit}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        String(item.content_value)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {isEditing === item.id ? null : (
+                        <div className="flex justify-end space-x-2">
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(item.id, item.content_value)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)}>
+                            <Trash className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

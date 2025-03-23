@@ -77,6 +77,7 @@ export interface Order {
   id: string;
   package: Package;
   customer: {
+    id?: string;
     name: string;
     email: string;
     phone?: string;
@@ -90,4 +91,11 @@ export interface Order {
   requirements?: CustomerRequirement[];
   feedback?: FeedbackItem[];
   rating?: ProjectRating;
+  domain?: {
+    name?: string;
+    status?: string;
+    nameservers?: string[];
+    expiryDate?: string;
+  };
+  addOns?: any[];
 }

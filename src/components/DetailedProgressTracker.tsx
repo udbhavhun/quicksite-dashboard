@@ -6,7 +6,7 @@ import { CheckCircle2, Clock, ChevronDown, ChevronUp, AlertTriangle } from 'luci
 import { Progress } from '@/components/ui/progress';
 import { AnimatePresence, motion } from 'framer-motion';
 
-interface DetailedProgressTrackerProps {
+export interface DetailedProgressTrackerProps {
   stages: ProjectStage[];
 }
 
