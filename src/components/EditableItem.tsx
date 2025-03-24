@@ -1,87 +1,81 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export interface EditableItemField {
+export interface FieldConfig {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'select';
+  type: "text" | "textarea" | "select" | "url";
+  options?: string[];
   required?: boolean;
-  options?: string[] | { value: string; label: string }[];
 }
 
 export interface EditableItemProps {
-  item?: any; // For backward compatibility
-  value?: any; // New prop name
-  onChange?: (updatedItem: any) => void; // Make onChange optional when onSave is provided
-  fields: EditableItemField[];
-  entityType?: string;
-  onSave?: (item: any) => void;
+  item: Record<string, any>;
+  fields: FieldConfig[];
+  onSave: (updatedItem: Record<string, any>) => void;
+  onChange?: (value: Record<string, any>) => void;
+  entityType: string;
 }
 
-const EditableItem: React.FC<EditableItemProps> = ({ 
-  item, 
-  value,
-  onChange, 
+const EditableItem: React.FC<EditableItemProps> = ({
+  item,
   fields,
-  entityType,
-  onSave
+  onSave,
+  onChange,
+  entityType
 }) => {
-  // Use either item or value prop (allows backward compatibility)
-  const itemData = value || item;
-  
-  // Create local state for editing when using onSave pattern
-  const [localData, setLocalData] = useState<any>(itemData);
-  const isEditMode = !!onSave && !onChange;
-  
-  const handleChange = (field: string, newValue: any) => {
-    if (isEditMode) {
-      // Update local state when in edit mode
-      setLocalData({
-        ...localData,
-        [field]: newValue
-      });
-    } else if (onChange) {
-      // Use onChange directly when provided
-      onChange({
-        ...itemData,
-        [field]: newValue
-      });
+  const [formData, setFormData] = useState<Record<string, any>>(item || {});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setFormData(item || {});
+  }, [item]);
+
+  const handleChange = (fieldName: string, value: any) => {
+    const updatedData = { ...formData, [fieldName]: value };
+    setFormData(updatedData);
+    if (onChange) {
+      onChange(updatedData);
     }
   };
-  
-  const handleSave = () => {
-    if (onSave) {
-      onSave(localData);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await onSave(formData);
+    } catch (error) {
+      console.error(`Error saving ${entityType}:`, error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
-  // Use local state when in edit mode, otherwise use props
-  const displayData = isEditMode ? localData : itemData;
-  
+
   return (
-    <div className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 py-4">
       {fields.map((field) => (
         <div key={field.name} className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
+          <label htmlFor={field.name} className="text-sm font-medium">
             {field.label} {field.required && <span className="text-red-500">*</span>}
           </label>
           
-          {field.type === 'text' && (
-            <Input
-              type="text"
-              value={displayData[field.name] || ''}
-              onChange={(e) => handleChange(field.name, e.target.value)}
-              required={field.required}
-            />
-          )}
-          
           {field.type === 'textarea' && (
             <Textarea
-              value={displayData[field.name] || ''}
+              id={field.name}
+              value={formData[field.name] || ''}
               onChange={(e) => handleChange(field.name, e.target.value)}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
               required={field.required}
               className="min-h-[100px]"
             />
@@ -89,38 +83,41 @@ const EditableItem: React.FC<EditableItemProps> = ({
           
           {field.type === 'select' && field.options && (
             <Select
-              value={displayData[field.name] || ''}
+              value={formData[field.name] || ''}
               onValueChange={(value) => handleChange(field.name, value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
               </SelectTrigger>
               <SelectContent>
-                {field.options.map((option) => {
-                  const value = typeof option === 'string' ? option : option.value;
-                  const label = typeof option === 'string' ? option : option.label;
-                  
-                  return (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  );
-                })}
+                {field.options.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+          )}
+          
+          {(field.type === 'text' || field.type === 'url') && (
+            <Input
+              id={field.name}
+              type={field.type === 'url' ? 'url' : 'text'}
+              value={formData[field.name] || ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              placeholder={`Enter ${field.label.toLowerCase()}`}
+              required={field.required}
+            />
           )}
         </div>
       ))}
       
-      {isEditMode && onSave && (
-        <button 
-          onClick={handleSave}
-          className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save Changes
-        </button>
-      )}
-    </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 };
 
