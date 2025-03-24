@@ -12,7 +12,9 @@ import {
   Lightbulb, 
   MessageCircle,
   Database,
-  Users
+  Users,
+  FileText,
+  Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -31,6 +33,7 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { profile, logout } = useUserStore();
+  const isAdmin = profile?.role === 'admin';
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -65,6 +68,17 @@ const AppSidebar = () => {
             <ShoppingBag className="mr-2 h-4 w-4" />
             Orders
           </Button>
+
+          {isAdmin && (
+            <Button
+              variant={isActive('/customer-management') ? 'secondary' : 'ghost'}
+              className="w-full justify-start mb-1"
+              onClick={() => navigate('/customer-management')}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Customers
+            </Button>
+          )}
           
           <Button
             variant={isActive('/profile') ? 'secondary' : 'ghost'}
@@ -83,24 +97,24 @@ const AppSidebar = () => {
             <MessageCircle className="mr-2 h-4 w-4" />
             Messages
           </Button>
-        </SidebarGroup>
-        
-        <SidebarGroup title="Support">
-          <Button
-            variant={isActive('/support') ? 'secondary' : 'ghost'}
-            className="w-full justify-start mb-1"
-            onClick={() => navigate('/support')}
-          >
-            <HelpCircle className="mr-2 h-4 w-4" />
-            Help Center
-          </Button>
           
+          {isAdmin && (
+            <Button
+              variant={isActive('/data-management') ? 'secondary' : 'ghost'}
+              className="w-full justify-start mb-1"
+              onClick={() => navigate('/data-management')}
+            >
+              <Database className="mr-2 h-4 w-4" />
+              Data Management
+            </Button>
+          )}
+
           <Button
             variant={isActive('/site-performance') ? 'secondary' : 'ghost'}
             className="w-full justify-start mb-1"
             onClick={() => navigate('/site-performance')}
           >
-            <BarChart2 className="mr-2 h-4 w-4" />
+            <Activity className="mr-2 h-4 w-4" />
             Site Performance
           </Button>
           
@@ -110,7 +124,7 @@ const AppSidebar = () => {
             onClick={() => navigate('/site-bugs')}
           >
             <Bug className="mr-2 h-4 w-4" />
-            Report Bugs
+            Bug Reports
           </Button>
           
           <Button
@@ -121,31 +135,16 @@ const AppSidebar = () => {
             <Lightbulb className="mr-2 h-4 w-4" />
             Feature Requests
           </Button>
-        </SidebarGroup>
-        
-        {profile?.role === 'admin' && (
-          <SidebarGroup title="Administration">
-            <Button
-              variant={isActive('/data-management') ? 'secondary' : 'ghost'}
-              className="w-full justify-start mb-1"
-              onClick={() => navigate('/data-management')}
-            >
-              <Database className="mr-2 h-4 w-4" />
-              Data Management
-            </Button>
-            
-            <Button
-              variant={isActive('/customer-management') ? 'secondary' : 'ghost'}
-              className="w-full justify-start mb-1"
-              onClick={() => navigate('/customer-management')}
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Customer Management
-            </Button>
-          </SidebarGroup>
-        )}
-        
-        <SidebarGroup title="Account">
+          
+          <Button
+            variant={isActive('/support') ? 'secondary' : 'ghost'}
+            className="w-full justify-start mb-1"
+            onClick={() => navigate('/support')}
+          >
+            <HelpCircle className="mr-2 h-4 w-4" />
+            Support
+          </Button>
+          
           <Button
             variant={isActive('/settings') ? 'secondary' : 'ghost'}
             className="w-full justify-start mb-1"
@@ -154,42 +153,18 @@ const AppSidebar = () => {
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          
+        </SidebarGroup>
+        
+        <SidebarFooter className="pt-4">
           <Button
-            variant="ghost"
-            className="w-full justify-start text-red-500 hover:text-red-700 hover:bg-red-50 mb-1"
+            variant="outline"
+            className="w-full justify-start"
             onClick={handleLogout}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mr-2 h-4 w-4"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Logout
+            Log out
           </Button>
-        </SidebarGroup>
+        </SidebarFooter>
       </SidebarContent>
-      
-      <SidebarFooter className="p-2">
-        <div className="flex items-center gap-2 px-2">
-          <div className="rounded-full w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-500 flex items-center justify-center text-white font-semibold">
-            {profile?.role === 'admin' ? 'A' : 'C'}
-          </div>
-          <div className="text-xs">
-            <p className="font-medium">{profile?.role === 'admin' ? 'Admin' : 'Customer'}</p>
-            <p className="text-gray-500">v1.0.0</p>
-          </div>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 };

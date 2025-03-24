@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Order, CustomerRequirement } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,6 +119,22 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
         return <Badge variant="outline">{priority}</Badge>;
     }
   };
+
+  // Define the category options
+  const categoryOptions = [
+    { value: 'design', label: 'Design' },
+    { value: 'functionality', label: 'Functionality' },
+    { value: 'content', label: 'Content' },
+    { value: 'integration', label: 'Integration' },
+    { value: 'performance', label: 'Performance' }
+  ];
+
+  // Define the priority options
+  const priorityOptions = [
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' }
+  ];
   
   return (
     <Card className="shadow-md">
@@ -281,23 +298,13 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                 name: 'category', 
                 label: 'Category', 
                 type: 'select',
-                options: [
-                  'design', 
-                  'functionality', 
-                  'content', 
-                  'integration', 
-                  'performance'
-                ]
+                options: categoryOptions
               },
               { 
                 name: 'priority', 
                 label: 'Priority', 
                 type: 'select',
-                options: [
-                  'low',
-                  'medium',
-                  'high'
-                ]
+                options: priorityOptions
               },
             ]}
           />
@@ -330,23 +337,13 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                   name: 'category', 
                   label: 'Category', 
                   type: 'select',
-                  options: [
-                    'design', 
-                    'functionality', 
-                    'content', 
-                    'integration', 
-                    'performance'
-                  ]
+                  options: categoryOptions
                 },
                 { 
                   name: 'priority', 
                   label: 'Priority', 
                   type: 'select',
-                  options: [
-                    'low',
-                    'medium',
-                    'high'
-                  ]
+                  options: priorityOptions
                 },
               ]}
             />
