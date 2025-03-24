@@ -44,28 +44,28 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
         <TabsContent value="faqs">
           <FaqManagement 
             faqs={faqs} 
-            onUpdateFaqs={onUpdateFaqs}
+            onUpdate={onUpdateFaqs}
           />
         </TabsContent>
         
         <TabsContent value="docs">
           <DocumentationManagement 
             docs={docs}
-            onUpdateDocs={onUpdateDocs}
+            onUpdate={onUpdateDocs}
           />
         </TabsContent>
         
         <TabsContent value="videos">
           <VideoManagement 
             videos={videos}
-            onUpdateVideos={onUpdateVideos}
+            onUpdate={onUpdateVideos}
           />
         </TabsContent>
         
         <TabsContent value="contact">
           <ContactSupportManagement 
-            contactSupport={contactSupport}
-            onUpdateContactSupport={onUpdateContactSupport}
+            data={contactSupport}
+            onUpdate={onUpdateContactSupport}
           />
         </TabsContent>
       </Tabs>

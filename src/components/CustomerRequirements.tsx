@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Order, CustomerRequirement } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -266,7 +265,6 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
         </div>
       </CardContent>
       
-      {/* Add Requirement Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -284,11 +282,11 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                 label: 'Category', 
                 type: 'select',
                 options: [
-                  { value: 'design', label: 'Design' },
-                  { value: 'functionality', label: 'Functionality' },
-                  { value: 'content', label: 'Content' },
-                  { value: 'integration', label: 'Integration' },
-                  { value: 'performance', label: 'Performance' },
+                  'design', 
+                  'functionality', 
+                  'content', 
+                  'integration', 
+                  'performance'
                 ]
               },
               { 
@@ -296,9 +294,9 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                 label: 'Priority', 
                 type: 'select',
                 options: [
-                  { value: 'low', label: 'Low' },
-                  { value: 'medium', label: 'Medium' },
-                  { value: 'high', label: 'High' },
+                  'low',
+                  'medium',
+                  'high'
                 ]
               },
             ]}
@@ -315,7 +313,6 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
         </DialogContent>
       </Dialog>
       
-      {/* Edit Requirement Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -334,11 +331,11 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                   label: 'Category', 
                   type: 'select',
                   options: [
-                    { value: 'design', label: 'Design' },
-                    { value: 'functionality', label: 'Functionality' },
-                    { value: 'content', label: 'Content' },
-                    { value: 'integration', label: 'Integration' },
-                    { value: 'performance', label: 'Performance' },
+                    'design', 
+                    'functionality', 
+                    'content', 
+                    'integration', 
+                    'performance'
                   ]
                 },
                 { 
@@ -346,9 +343,9 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
                   label: 'Priority', 
                   type: 'select',
                   options: [
-                    { value: 'low', label: 'Low' },
-                    { value: 'medium', label: 'Medium' },
-                    { value: 'high', label: 'High' },
+                    'low',
+                    'medium',
+                    'high'
                   ]
                 },
               ]}
