@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import AppSidebar from '@/components/AppSidebar';
@@ -264,6 +263,21 @@ const CustomerManagement = () => {
     setSelectedCustomer(customer);
     fetchCustomerOrders(customer.id);
     setActiveTab('overview');
+  };
+
+  const getStatusBadgeVariant = (status: string): "default" | "destructive" | "outline" | "secondary" => {
+    switch(status.toLowerCase()) {
+      case 'active':
+        return "default";
+      case 'inactive':
+        return "secondary";
+      case 'suspended':
+        return "destructive";
+      case 'pending':
+        return "outline";
+      default:
+        return "secondary";
+    }
   };
 
   const filteredCustomers = customers.filter(customer => 
@@ -653,7 +667,7 @@ const CustomerManagement = () => {
                                     ? 'bg-red-100 text-red-800'
                                     : 'bg-green-100 text-green-800'
                                 }`}>
-                                  {customer.is_blocked ? 'Blocked' : 'Active'}
+                                  {getStatusBadgeVariant(customer.status)}
                                 </span>
                               </TableCell>
                               <TableCell>

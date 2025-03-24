@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DialogFooter } from "@/components/ui/dialog";
 
 export interface FieldConfig {
   name: string;

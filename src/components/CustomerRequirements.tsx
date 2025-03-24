@@ -1,15 +1,15 @@
 
 import React, { useState } from 'react';
 import { Order, CustomerRequirement } from '@/lib/data';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { CheckSquare, Filter, MessageSquare, Plus, Tag } from 'lucide-react';
-import EditableItem from './EditableItem';
+import EditableItem, { FieldConfig } from './EditableItem';
 import { useUserStore } from '@/stores/userStore';
 
 export interface CustomerRequirementsProps {
@@ -121,20 +121,10 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
   };
 
   // Define the category options
-  const categoryOptions = [
-    { value: 'design', label: 'Design' },
-    { value: 'functionality', label: 'Functionality' },
-    { value: 'content', label: 'Content' },
-    { value: 'integration', label: 'Integration' },
-    { value: 'performance', label: 'Performance' }
-  ];
+  const categoryOptions = ['design', 'functionality', 'content', 'integration', 'performance'];
 
   // Define the priority options
-  const priorityOptions = [
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' }
-  ];
+  const priorityOptions = ['low', 'medium', 'high'];
   
   return (
     <Card className="shadow-md">
@@ -289,8 +279,10 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
           </DialogHeader>
           
           <EditableItem 
-            value={newRequirement}
+            item={newRequirement}
             onChange={setNewRequirement}
+            onSave={handleAddRequirement}
+            entityType="requirement"
             fields={[
               { name: 'title', label: 'Title', type: 'text', required: true },
               { name: 'description', label: 'Description', type: 'textarea' },
@@ -328,8 +320,10 @@ const CustomerRequirements: React.FC<CustomerRequirementsProps> = ({ order }) =>
           
           {editingRequirement && (
             <EditableItem 
-              value={editingRequirement}
+              item={editingRequirement}
               onChange={setEditingRequirement}
+              onSave={handleEditRequirement}
+              entityType="requirement"
               fields={[
                 { name: 'title', label: 'Title', type: 'text', required: true },
                 { name: 'description', label: 'Description', type: 'textarea' },

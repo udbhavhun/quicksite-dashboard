@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import OrderManagement from '@/components/data-management/OrderManagement';
 import CustomerNotificationsManager from '@/components/data-management/CustomerNotificationsManager';
 import SupportContentManagement from '@/components/data-management/support/SupportContentManagement';
-import { faqs, documentation, videos, contactSupport } from '@/lib/support-data';
+import { faqs, documentation, contactSupport } from '@/lib/support-data';
 import { useUserStore } from '@/stores/userStore';
 import { ORDERS } from '@/lib/data';
 
@@ -29,7 +29,7 @@ const DataManagement = () => {
       name: order.customer.name,
       email: order.customer.email
     },
-    status: order.status,
+    status: order.status.label, // Just use the label string instead of the whole object
     package: {
       name: order.package.name,
       price: order.package.price
@@ -51,7 +51,7 @@ const DataManagement = () => {
   // State for support content management
   const [faqItems, setFaqItems] = useState(faqs);
   const [documentationItems, setDocumentationItems] = useState(documentation);
-  const [videoItems, setVideoItems] = useState(videos);
+  const [videoItems, setVideoItems] = useState([]);  // Empty array instead of videos
   const [contactItems, setContactItems] = useState(contactSupport);
   
   return (
@@ -87,9 +87,6 @@ const DataManagement = () => {
               <TabsContent value="support" className="space-y-6">
                 <SupportContentManagement 
                   faqs={faqItems}
-                  documentation={documentationItems}
-                  videos={videoItems}
-                  contactSupport={contactItems}
                   onUpdateFaqs={setFaqItems}
                   onUpdateDocumentation={setDocumentationItems}
                   onUpdateVideos={setVideoItems}
