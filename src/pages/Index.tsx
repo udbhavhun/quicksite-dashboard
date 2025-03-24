@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import AppSidebar from '@/components/AppSidebar';
@@ -24,13 +24,11 @@ const Index = () => {
   const [animateIn, setAnimateIn] = useState(false);
   const isAdmin = profile?.role === 'admin';
   
-  // Find the user's order based on their email
   useEffect(() => {
     if (profile && profile.email) {
       const userOrder = ORDERS.find(order => order.customer.email === profile.email);
       setActiveOrder(userOrder || ORDERS[0]);
     } else {
-      // Default to first order if no matching email
       setActiveOrder(ORDERS[0]);
     }
     
@@ -136,7 +134,6 @@ const Index = () => {
   );
 };
 
-// Extracted Customer Dashboard component
 const CustomerDashboard = ({ activeOrder, animateIn, navigate }: { activeOrder: any; animateIn: boolean; navigate: any }) => {
   return (
     <motion.div
@@ -182,11 +179,9 @@ const CustomerDashboard = ({ activeOrder, animateIn, navigate }: { activeOrder: 
   );
 };
 
-// Extracted Admin Dashboard component
 const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate: any }) => {
   return (
     <div className="space-y-6">
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <QuickStatCard 
           title="Active Orders" 
@@ -215,14 +210,13 @@ const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate:
         <QuickStatCard 
           title="Support Tickets" 
           value="5" 
-          icon={<HelpCircle className="h-5 w-5 text-orange-500" />} 
+          icon={<HelpIcon className="h-5 w-5 text-orange-500" />} 
           linkTo="/support" 
           linkText="View Tickets"
           navigate={navigate}
         />
       </div>
 
-      {/* Recent Orders */}
       <div className="glass-card p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gradient">Recent Orders</h2>
@@ -234,12 +228,10 @@ const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate:
           </button>
         </div>
         
-        {/* Order Summary for Admin */}
         <div className="mb-8">
           <OrderSummary orders={ORDERS.slice(0, 5)} />
         </div>
         
-        {/* Admin orders table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: animateIn ? 1 : 0, y: animateIn ? 0 : 20 }}
@@ -307,7 +299,6 @@ const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate:
         </motion.div>
       </div>
 
-      {/* Data Management Shortcuts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -343,7 +334,6 @@ const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate:
   );
 };
 
-// Quick Stat Card component
 const QuickStatCard = ({ 
   title, 
   value, 
@@ -381,7 +371,6 @@ const QuickStatCard = ({
   );
 };
 
-// Make ShoppingBag available
 const ShoppingBag = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>

@@ -13,7 +13,7 @@ import { Trash } from 'lucide-react';
 import { VideoTutorialItem } from '@/models/support-data';
 import EditableItem from '@/components/EditableItem';
 
-interface VideoManagementProps {
+export interface VideoManagementProps {
   videos: VideoTutorialItem[];
   onUpdate: (updatedVideo: VideoTutorialItem) => void;
   onDelete: (id: string) => void;
@@ -62,8 +62,8 @@ const VideoManagement: React.FC<VideoManagementProps> = ({
                       fields={[
                         { name: 'title', label: 'Title', type: 'text' },
                         { name: 'duration', label: 'Duration', type: 'text' },
-                        { name: 'link', label: 'Link', type: 'url' },
-                        { name: 'thumbnail', label: 'Thumbnail URL', type: 'url' }
+                        { name: 'link', label: 'Link', type: 'text' },
+                        { name: 'thumbnail', label: 'Thumbnail URL', type: 'text' }
                       ]}
                       onSave={onUpdate}
                       entityType="video"

@@ -5,38 +5,7 @@ import FaqManagement from './FaqManagement';
 import DocumentationManagement from './DocumentationManagement';
 import VideoManagement from './VideoManagement';
 import ContactSupportManagement from './ContactSupportManagement';
-
-export interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-}
-
-export interface DocumentationItem {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  lastUpdated: string;
-}
-
-export interface VideoTutorialItem {
-  id: string;
-  title: string;
-  url: string;
-  description: string;
-  duration: string;
-  thumbnail?: string;
-}
-
-export interface ContactSupportItem {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  department: string;
-}
+import { FAQItem, DocumentationItem, VideoTutorialItem, ContactSupportItem } from '@/models/support-data';
 
 export interface SupportContentManagementProps {
   faqs: FAQItem[];
@@ -60,6 +29,7 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
   onUpdateContactSupport = () => {}
 }) => {
   const [activeTab, setActiveTab] = useState('faqs');
+  const [itemToDelete, setItemToDelete] = useState<{id: string, type: string} | null>(null);
   
   // Wrapper functions to handle the proper types
   const handleUpdateFaq = (updatedFaq: FAQItem) => {
@@ -82,6 +52,31 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
     onUpdateContactSupport(updatedContacts);
   };
   
+  // Delete handlers
+  const handleDeleteFaq = (id: string) => {
+    const updatedFaqs = faqs.filter(faq => faq.id !== id);
+    onUpdateFaqs(updatedFaqs);
+    setItemToDelete(null);
+  };
+  
+  const handleDeleteDoc = (id: string) => {
+    const updatedDocs = docs.filter(doc => doc.id !== id);
+    onUpdateDocs(updatedDocs);
+    setItemToDelete(null);
+  };
+  
+  const handleDeleteVideo = (id: string) => {
+    const updatedVideos = videos.filter(video => video.id !== id);
+    onUpdateVideos(updatedVideos);
+    setItemToDelete(null);
+  };
+  
+  const handleDeleteContact = (id: string) => {
+    const updatedContacts = contactSupport.filter(contact => contact.id !== id);
+    onUpdateContactSupport(updatedContacts);
+    setItemToDelete(null);
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
       <h2 className="text-xl font-bold mb-6">Support Content Management</h2>
@@ -98,6 +93,8 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
           <FaqManagement 
             faqs={faqs} 
             onUpdate={handleUpdateFaq}
+            onDelete={handleDeleteFaq}
+            setItemToDelete={setItemToDelete}
           />
         </TabsContent>
         
@@ -105,6 +102,8 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
           <DocumentationManagement 
             docs={docs}
             onUpdate={handleUpdateDoc}
+            onDelete={handleDeleteDoc}
+            setItemToDelete={setItemToDelete}
           />
         </TabsContent>
         
@@ -112,16 +111,22 @@ const SupportContentManagement: React.FC<SupportContentManagementProps> = ({
           <VideoManagement 
             videos={videos}
             onUpdate={handleUpdateVideo}
+            onDelete={handleDeleteVideo}
+            setItemToDelete={setItemToDelete}
           />
         </TabsContent>
         
         <TabsContent value="contact">
           <ContactSupportManagement 
-            data={contactSupport}
+            contacts={contactSupport}
             onUpdate={handleUpdateContactSupport}
+            onDelete={handleDeleteContact}
+            setItemToDelete={setItemToDelete}
           />
         </TabsContent>
       </Tabs>
+      
+      {/* We can add a confirmation dialog here for delete operations */}
     </div>
   );
 };

@@ -13,7 +13,7 @@ import { Trash } from 'lucide-react';
 import { DocumentationItem } from '@/models/support-data';
 import EditableItem from '@/components/EditableItem';
 
-interface DocumentationManagementProps {
+export interface DocumentationManagementProps {
   docs: DocumentationItem[];
   onUpdate: (updatedDoc: DocumentationItem) => void;
   onDelete: (id: string) => void;
@@ -64,7 +64,7 @@ const DocumentationManagement: React.FC<DocumentationManagementProps> = ({
                       fields={[
                         { name: 'title', label: 'Title', type: 'text' },
                         { name: 'description', label: 'Description', type: 'textarea' },
-                        { name: 'link', label: 'Link', type: 'url' },
+                        { name: 'link', label: 'Link', type: 'text' },
                         { name: 'category', label: 'Category', type: 'text' }
                       ]}
                       onSave={onUpdate}

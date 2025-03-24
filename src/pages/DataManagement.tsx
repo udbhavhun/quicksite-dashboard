@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ORDERS, Order, PROJECT_STATUSES } from '@/lib/data';
 import { messages } from '@/lib/message-data';
 import { performanceData, bugReports, featureRequests } from '@/lib/site-data';
-import { faqs, documentation, videoTutorials } from '@/lib/support-data';
+import { faqs, documentation, videoTutorials, contactSupport } from '@/lib/support-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import MessageManagement from '@/components/data-management/MessageManagement';
 import FeatureRequestManagement from '@/components/data-management/FeatureRequestManagement';
 import SitePerformanceManagement from '@/components/data-management/SitePerformanceManagement';
 import { useCustomerData } from '@/hooks/use-customer-data';
+import { FAQItem, DocumentationItem, VideoTutorialItem, ContactSupportItem } from '@/models/support-data';
 
 // Define types for the transformed Orders we'll be using in this component
 interface TransformedOrder {
@@ -54,10 +55,10 @@ const DataManagement = () => {
   const [activeTab, setActiveTab] = useState('customer-data');
   const [orders, setOrders] = useState<TransformedOrder[]>(transformOrders());
   const [messagesList, setMessagesList] = useState(messages);
-  const [faqsList, setFaqsList] = useState(faqs);
-  const [docsList, setDocsList] = useState(documentation);
-  const [videosList, setVideosList] = useState(videoTutorials);
-  const [contactSupportList, setContactSupportList] = useState([]);
+  const [faqsList, setFaqsList] = useState<FAQItem[]>(faqs);
+  const [docsList, setDocsList] = useState<DocumentationItem[]>(documentation);
+  const [videosList, setVideosList] = useState<VideoTutorialItem[]>(videoTutorials);
+  const [contactSupportList, setContactSupportList] = useState<ContactSupportItem[]>(contactSupport);
   const [performanceDataList, setPerformanceDataList] = useState(performanceData);
   const [bugReportsList, setBugReportsList] = useState(bugReports);
   const [featureRequestsList, setFeatureRequestsList] = useState(featureRequests);
@@ -90,6 +91,23 @@ const DataManagement = () => {
     setSelectedCustomerId(undefined);
     setSelectedOrderId(undefined);
   }, [activeTab]);
+  
+  // Handlers for updating support content
+  const handleUpdateFaqs = (updatedFaqs: FAQItem[]) => {
+    setFaqsList(updatedFaqs);
+  };
+  
+  const handleUpdateDocs = (updatedDocs: DocumentationItem[]) => {
+    setDocsList(updatedDocs);
+  };
+  
+  const handleUpdateVideos = (updatedVideos: VideoTutorialItem[]) => {
+    setVideosList(updatedVideos);
+  };
+  
+  const handleUpdateContactSupport = (updatedContacts: ContactSupportItem[]) => {
+    setContactSupportList(updatedContacts);
+  };
   
   if (isLoading) {
     return (
@@ -187,10 +205,10 @@ const DataManagement = () => {
               docs={docsList}
               videos={videosList}
               contactSupport={contactSupportList}
-              onUpdateFaqs={setFaqsList}
-              onUpdateDocs={setDocsList}
-              onUpdateVideos={setVideosList}
-              onUpdateContactSupport={setContactSupportList}
+              onUpdateFaqs={handleUpdateFaqs}
+              onUpdateDocs={handleUpdateDocs}
+              onUpdateVideos={handleUpdateVideos}
+              onUpdateContactSupport={handleUpdateContactSupport}
             />
           </TabsContent>
         </Tabs>

@@ -13,7 +13,7 @@ import { Trash } from 'lucide-react';
 import { FAQItem } from '@/models/support-data';
 import EditableItem from '@/components/EditableItem';
 
-interface FaqManagementProps {
+export interface FaqManagementProps {
   faqs: FAQItem[];
   onUpdate: (updatedFaq: FAQItem) => void;
   onDelete: (id: string) => void;

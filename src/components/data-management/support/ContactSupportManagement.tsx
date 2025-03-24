@@ -13,7 +13,7 @@ import { Trash } from 'lucide-react';
 import { ContactSupportItem } from '@/models/support-data';
 import EditableItem from '@/components/EditableItem';
 
-interface ContactSupportManagementProps {
+export interface ContactSupportManagementProps {
   contacts: ContactSupportItem[];
   onUpdate: (updatedContact: ContactSupportItem) => void;
   onDelete: (id: string) => void;

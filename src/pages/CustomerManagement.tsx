@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import AppSidebar from '@/components/AppSidebar';
 import { SidebarInset } from '@/components/ui/sidebar';
@@ -79,7 +78,6 @@ const CustomerManagement = () => {
   
   const handleAddCustomer = async () => {
     try {
-      // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: newCustomer.email,
         password: newCustomer.password,
@@ -98,11 +96,9 @@ const CustomerManagement = () => {
         description: `Customer ${newCustomer.name} has been added successfully.`,
       });
       
-      // Reset form and close dialog
       setNewCustomer({ name: '', email: '', password: '' });
       setIsAddDialogOpen(false);
       
-      // Refresh customer list
       fetchCustomers();
     } catch (error: any) {
       console.error('Error adding customer:', error.message);
@@ -134,7 +130,6 @@ const CustomerManagement = () => {
         description: 'Customer updated successfully.',
       });
       
-      // Update local state
       setCustomers(prevCustomers => 
         prevCustomers.map(c => 
           c.id === selectedCustomer.id 
@@ -158,12 +153,10 @@ const CustomerManagement = () => {
     if (!selectedCustomer) return;
     
     try {
-      // Delete auth user (which will cascade to delete the profile)
       const { error } = await supabase.auth.admin.deleteUser(selectedCustomer.id);
       
       if (error) {
         console.error('Error deleting user:', error);
-        // If admin delete fails, just delete the profile
         const { error: profileError } = await supabase
           .from('profiles')
           .delete()
@@ -177,7 +170,6 @@ const CustomerManagement = () => {
         description: 'Customer deleted successfully.',
       });
       
-      // Update local state
       setCustomers(prevCustomers => 
         prevCustomers.filter(c => c.id !== selectedCustomer.id)
       );
@@ -212,7 +204,6 @@ const CustomerManagement = () => {
         description: `Customer ${isBlocked ? 'unblocked' : 'blocked'} successfully.`,
       });
       
-      // Update local state
       setCustomers(prevCustomers => 
         prevCustomers.map(c => 
           c.id === customer.id 
@@ -385,7 +376,6 @@ const CustomerManagement = () => {
         </main>
       </SidebarInset>
       
-      {/* Edit Customer Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -397,15 +387,16 @@ const CustomerManagement = () => {
               fields={[
                 { name: 'name', label: 'Name', type: 'text' },
                 { name: 'email', label: 'Email', type: 'text' },
+                { name: 'phone', label: 'Phone', type: 'text' }
               ]}
               onSave={handleUpdateCustomer}
-              entityType="customers"
+              onChange={() => {}}
+              entityType="customer"
             />
           )}
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
