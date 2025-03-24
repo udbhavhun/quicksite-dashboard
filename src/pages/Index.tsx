@@ -7,7 +7,7 @@ import StatusBadge from '@/components/StatusBadge';
 import ProgressTracker from '@/components/ProgressTracker';
 import OrderSummary from '@/components/OrderSummary';
 import { ORDERS } from '@/lib/data';
-import { Package as PackageIcon, RefreshCw, FileText, Bell, ExternalLink, Users, Database, Activity } from 'lucide-react';
+import { Package as PackageIcon, RefreshCw, FileText, Bell, ExternalLink, Users, Database, Activity, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -210,13 +210,13 @@ const AdminDashboard = ({ animateIn, navigate }: { animateIn: boolean; navigate:
         <QuickStatCard 
           title="Support Tickets" 
           value="5" 
-          icon={<HelpIcon className="h-5 w-5 text-orange-500" />} 
+          icon={<HelpCircle className="h-5 w-5 text-orange-500" />} 
           linkTo="/support" 
           linkText="View Tickets"
           navigate={navigate}
         />
       </div>
-
+      
       <div className="glass-card p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gradient">Recent Orders</h2>
