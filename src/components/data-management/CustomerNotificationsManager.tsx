@@ -93,7 +93,7 @@ const CustomerNotificationsManager = () => {
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newNotification, setNewNotification] = useState({
+  const [newNotification, setNewNotification] = useState<Omit<Notification, 'id'>>({
     title: '',
     message: '',
     type: 'info',
@@ -125,7 +125,7 @@ const CustomerNotificationsManager = () => {
     }));
   };
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleSelectChange = (name: string, value: 'info' | 'warning' | 'success' | 'error') => {
     setNewNotification(prev => ({
       ...prev,
       [name]: value
@@ -146,10 +146,10 @@ const CustomerNotificationsManager = () => {
     });
   };
 
-  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSwitchChange = (checked: boolean) => {
     setNewNotification(prev => ({
       ...prev,
-      status: e.target.checked ? 'scheduled' : 'draft'
+      status: checked ? 'scheduled' : 'draft'
     }));
   };
 
@@ -170,7 +170,6 @@ const CustomerNotificationsManager = () => {
     setSelectedDate(undefined);
   };
 
-  // To fix the type issue in handling notifications, modify the addNotification function:
   const addNotification = () => {
     if (!newNotification.title || !newNotification.message || !newNotification.recipient_id) {
       toast({
@@ -183,22 +182,10 @@ const CustomerNotificationsManager = () => {
 
     const notification: Notification = {
       id: `notif-${Math.random().toString(36).substr(2, 9)}`,
-      title: newNotification.title,
-      message: newNotification.message,
-      type: newNotification.type || 'info',
-      status: newNotification.status as "error" | "sent" | "scheduled" | "draft" || 'draft',
-      sent_at: newNotification.sent_at || '',
-      scheduled_for: newNotification.scheduled_for || '',
-      recipient_id: newNotification.recipient_id,
-      recipient_email: newNotification.recipient_email || '',
-      recipient_name: newNotification.recipient_name || '',
-      channels: newNotification.channels || ['dashboard'],
-      read: false
+      ...newNotification
     };
 
-    // Use type assertion to ensure notifications is treated as Notification[]
-    setNotifications(prevNotifications => [...prevNotifications, notification] as Notification[]);
-    
+    setNotifications([...notifications, notification]);
     setIsDialogOpen(false);
     resetNewNotification();
     
@@ -236,7 +223,7 @@ const CustomerNotificationsManager = () => {
                   <td className="py-2">{notification.status}</td>
                   <td className="py-2">{notification.channels.join(', ')}</td>
                   <td className="py-2">
-                    <Button variant="outline" size="xs">View</Button>
+                    <Button variant="outline" size="sm">View</Button>
                   </td>
                 </tr>
               ))}
@@ -264,7 +251,7 @@ const CustomerNotificationsManager = () => {
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">Type</Label>
-              <Select value={newNotification.type} onValueChange={(value) => handleSelectChange('type', value)}>
+              <Select value={newNotification.type} onValueChange={(value: 'info' | 'warning' | 'success' | 'error') => handleSelectChange('type', value)}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>

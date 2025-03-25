@@ -51,7 +51,7 @@ const DataManagement = () => {
   // State for support content management
   const [faqItems, setFaqItems] = useState(faqs);
   const [documentationItems, setDocumentationItems] = useState(documentation);
-  const [videoItems, setVideoItems] = useState([]);  // Empty array instead of videos
+  const [videoItems, setVideoItems] = useState<any[]>([]); // Empty array for videos
   const [contactItems, setContactItems] = useState(contactSupport);
   
   return (
@@ -88,8 +88,11 @@ const DataManagement = () => {
                 <SupportContentManagement 
                   faqs={faqItems}
                   onUpdateFaqs={setFaqItems}
+                  documentation={documentationItems}
                   onUpdateDocumentation={setDocumentationItems}
+                  videos={videoItems}
                   onUpdateVideos={setVideoItems}
+                  contactSupport={contactItems}
                   onUpdateContactSupport={setContactItems}
                 />
               </TabsContent>

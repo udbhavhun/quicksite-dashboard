@@ -1,186 +1,283 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash } from 'lucide-react';
-import EditableItem, { FieldConfig } from '@/components/EditableItem';
 
 interface VideoItem {
   id: string;
   title: string;
   description: string;
   url: string;
-  thumbnail: string;
+  category: string;
+  thumbnailUrl?: string;
 }
 
-const VideoManagement = () => {
+interface VideoManagementProps {
+  videos: VideoItem[];
+  onUpdateVideos: (videos: VideoItem[]) => void;
+}
+
+const VideoManagement: React.FC<VideoManagementProps> = ({ videos, onUpdateVideos }) => {
   const { toast } = useToast();
-  const [videos, setVideos] = useState<VideoItem[]>([
-    {
-      id: 'video-1',
-      title: 'Introduction to the Platform',
-      description: 'A brief overview of the platform and its features.',
-      url: 'https://example.com/video1',
-      thumbnail: 'https://example.com/thumbnail1.jpg',
-    },
-    {
-      id: 'video-2',
-      title: 'Setting Up Your Profile',
-      description: 'Learn how to set up your profile and customize your settings.',
-      url: 'https://example.com/video2',
-      thumbnail: 'https://example.com/thumbnail2.jpg',
-    },
-  ]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingVideo, setEditingVideo] = useState<VideoItem | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newVideo, setNewVideo] = useState<Omit<VideoItem, 'id'>>({
     title: '',
     description: '',
     url: '',
-    thumbnail: '',
+    category: 'tutorial'
   });
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
 
   const handleAddVideo = () => {
-    const newId = `video-${Math.random().toString(36).substring(2, 9)}`;
-    const video: VideoItem = {
-      id: newId,
-      title: newVideo.title,
-      description: newVideo.description,
-      url: newVideo.url,
-      thumbnail: newVideo.thumbnail,
+    if (!newVideo.title || !newVideo.url) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all required fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const videoItem: VideoItem = {
+      id: `video-${Date.now()}`,
+      ...newVideo
     };
 
-    setVideos([...videos, video]);
-    setIsDialogOpen(false);
-    setNewVideo({
-      title: '',
-      description: '',
-      url: '',
-      thumbnail: '',
-    });
-
+    onUpdateVideos([...videos, videoItem]);
+    setIsAddDialogOpen(false);
+    setNewVideo({ title: '', description: '', url: '', category: 'tutorial' });
+    
     toast({
-      title: 'Video added',
-      description: 'The new video has been added successfully.',
+      title: 'Success',
+      description: 'Video added successfully',
     });
   };
 
   const handleEditVideo = () => {
-    if (!editingVideo) return;
+    if (!selectedVideo || !selectedVideo.title || !selectedVideo.url) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all required fields',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    setVideos(vids => vids.map(vid =>
-      vid.id === editingVideo.id ? editingVideo : vid
-    ));
+    const updatedVideos = videos.map(video => 
+      video.id === selectedVideo.id ? selectedVideo : video
+    );
 
-    setIsDialogOpen(false);
-    setEditingVideo(null);
-
+    onUpdateVideos(updatedVideos);
+    setIsEditDialogOpen(false);
+    setSelectedVideo(null);
+    
     toast({
-      title: 'Video updated',
-      description: 'The video has been updated successfully.',
+      title: 'Success',
+      description: 'Video updated successfully',
     });
   };
 
   const handleDeleteVideo = (id: string) => {
-    setVideos(vids => vids.filter(vid => vid.id !== id));
-
+    const updatedVideos = videos.filter(video => video.id !== id);
+    onUpdateVideos(updatedVideos);
+    
     toast({
-      title: 'Video deleted',
-      description: 'The video has been deleted successfully.',
+      title: 'Success',
+      description: 'Video deleted successfully',
     });
   };
 
-  const fields = [
-  { name: 'title', label: 'Title', type: 'text' as const },
-  { name: 'description', label: 'Description', type: 'textarea' as const },
-  { name: 'url', label: 'Video URL', type: 'text' as const },
-  { name: 'thumbnail', label: 'Thumbnail URL', type: 'text' as const },
-];
-
   return (
-    <Card className="shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-xl">Video Management</CardTitle>
-        <Button size="sm" onClick={() => setIsDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Support Videos</h2>
+        <Button 
+          size="sm" 
+          onClick={() => setIsAddDialogOpen(true)}
+        >
           Add Video
         </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
-          {videos.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No videos found.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {videos.map((video) => (
-                <div key={video.id} className="border rounded-lg p-4">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-32 object-cover mb-2 rounded-md"
+      </div>
+
+      {videos.length === 0 ? (
+        <p className="text-center text-gray-500 my-8">No videos found. Add some to get started.</p>
+      ) : (
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {videos.map(video => (
+            <Card key={video.id} className="overflow-hidden">
+              <div className="relative pt-[56.25%] bg-gray-100">
+                {video.thumbnailUrl ? (
+                  <img 
+                    src={video.thumbnailUrl} 
+                    alt={video.title} 
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <h3 className="font-medium">{video.title}</h3>
-                  <p className="text-sm text-gray-600">{video.description}</p>
-                  <div className="flex justify-end mt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mr-2"
-                      onClick={() => {
-                        setEditingVideo(video);
-                        setIsDialogOpen(true);
-                      }}
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-gray-400">No thumbnail</span>
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <h3 className="font-medium truncate">{video.title}</h3>
+                  <p className="text-sm text-gray-600 line-clamp-2">{video.description}</p>
+                  <div className="text-xs text-gray-500">Category: {video.category}</div>
+                  <div className="flex justify-between items-center pt-2">
+                    <a 
+                      href={video.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
                     >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDeleteVideo(video.id)}
-                    >
-                      <Trash className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
+                      Watch Video
+                    </a>
+                    <div className="space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedVideo(video);
+                          setIsEditDialogOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDeleteVideo(video.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </CardContent>
+      )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Add Video Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingVideo ? 'Edit Video' : 'Add Video'}</DialogTitle>
+            <DialogTitle>Add New Video</DialogTitle>
           </DialogHeader>
-
-          <EditableItem
-            item={editingVideo || newVideo}
-            fields={fields}
-            onSave={editingVideo ? handleEditVideo : handleAddVideo}
-            onChange={editingVideo ? setEditingVideo : setNewVideo}
-            entityType="video"
-          />
-
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input 
+                value={newVideo.title} 
+                onChange={(e) => setNewVideo({...newVideo, title: e.target.value})} 
+                placeholder="Enter video title"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea 
+                value={newVideo.description} 
+                onChange={(e) => setNewVideo({...newVideo, description: e.target.value})} 
+                placeholder="Enter video description"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Video URL</label>
+              <Input 
+                value={newVideo.url} 
+                onChange={(e) => setNewVideo({...newVideo, url: e.target.value})} 
+                placeholder="E.g., https://youtube.com/watch?v=..."
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category</label>
+              <Input 
+                value={newVideo.category} 
+                onChange={(e) => setNewVideo({...newVideo, category: e.target.value})} 
+                placeholder="E.g., Tutorial, Walkthrough"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Thumbnail URL (Optional)</label>
+              <Input 
+                value={newVideo.thumbnailUrl || ''} 
+                onChange={(e) => setNewVideo({...newVideo, thumbnailUrl: e.target.value})} 
+                placeholder="Enter thumbnail image URL"
+              />
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={editingVideo ? handleEditVideo : handleAddVideo}>
-              {editingVideo ? 'Update Video' : 'Add Video'}
-            </Button>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddVideo}>Add Video</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+
+      {/* Edit Video Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Video</DialogTitle>
+          </DialogHeader>
+          {selectedVideo && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Title</label>
+                <Input 
+                  value={selectedVideo.title} 
+                  onChange={(e) => setSelectedVideo({...selectedVideo, title: e.target.value})} 
+                  placeholder="Enter video title"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Description</label>
+                <Textarea 
+                  value={selectedVideo.description} 
+                  onChange={(e) => setSelectedVideo({...selectedVideo, description: e.target.value})} 
+                  placeholder="Enter video description"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Video URL</label>
+                <Input 
+                  value={selectedVideo.url} 
+                  onChange={(e) => setSelectedVideo({...selectedVideo, url: e.target.value})} 
+                  placeholder="E.g., https://youtube.com/watch?v=..."
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Category</label>
+                <Input 
+                  value={selectedVideo.category} 
+                  onChange={(e) => setSelectedVideo({...selectedVideo, category: e.target.value})} 
+                  placeholder="E.g., Tutorial, Walkthrough"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Thumbnail URL (Optional)</label>
+                <Input 
+                  value={selectedVideo.thumbnailUrl || ''} 
+                  onChange={(e) => setSelectedVideo({...selectedVideo, thumbnailUrl: e.target.value})} 
+                  placeholder="Enter thumbnail image URL"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditVideo}>Update Video</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

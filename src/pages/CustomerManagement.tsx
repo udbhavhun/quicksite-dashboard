@@ -43,6 +43,7 @@ interface Customer {
   is_blocked?: boolean;
   company?: string;
   phone?: string;
+  status?: string;
 }
 
 interface CustomerActivity {
@@ -99,7 +100,6 @@ const CustomerManagement = () => {
   };
 
   const fetchCustomerOrders = (customerId: string) => {
-    // For now using mocked data, in a real app we would fetch from database
     const filteredOrders = ORDERS.filter(order => order.customer.id === customerId);
     setCustomerOrders(filteredOrders);
   };
@@ -265,7 +265,9 @@ const CustomerManagement = () => {
     setActiveTab('overview');
   };
 
-  const getStatusBadgeVariant = (status: string): "default" | "destructive" | "outline" | "secondary" => {
+  const getStatusBadgeVariant = (status: string | undefined): "default" | "destructive" | "outline" | "secondary" => {
+    if (!status) return "secondary";
+    
     switch(status.toLowerCase()) {
       case 'active':
         return "default";
@@ -533,7 +535,7 @@ const CustomerManagement = () => {
                                     <TableCell>
                                       <Badge variant={
                                         order.status.color === 'success' ? 'default' : 
-                                        order.status.color === 'warning' ? 'warning' : 
+                                        order.status.color === 'warning' ? 'secondary' : 
                                         order.status.color === 'error' ? 'destructive' : 'secondary'
                                       }>
                                         {order.status.label}
@@ -578,7 +580,6 @@ const CustomerManagement = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {/* This would typically be populated from real activity data */}
                           <div className="border-b pb-4">
                             <div className="flex justify-between">
                               <span className="font-medium">Logged in</span>
@@ -667,7 +668,7 @@ const CustomerManagement = () => {
                                     ? 'bg-red-100 text-red-800'
                                     : 'bg-green-100 text-green-800'
                                 }`}>
-                                  {getStatusBadgeVariant(customer.status)}
+                                  {customer.is_blocked ? 'Blocked' : 'Active'}
                                 </span>
                               </TableCell>
                               <TableCell>
@@ -764,3 +765,4 @@ const CustomerManagement = () => {
 };
 
 export default CustomerManagement;
+

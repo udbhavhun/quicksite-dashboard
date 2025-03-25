@@ -1,12 +1,13 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FAQManagement from './FAQManagement';
-import DocumentationManagement from './DocumentationManagement';
-import VideoManagement from './VideoManagement';
-import ContactSupportManagement from './ContactSupportManagement';
+import FAQManagement from '@/components/data-management/support/FaqManagement';
+import DocumentationManagement from '@/components/data-management/support/DocumentationManagement';
+import VideoManagement from '@/components/data-management/support/VideoManagement';
+import ContactSupportManagement from '@/components/data-management/support/ContactSupportManagement';
 
-// Modify the props interface to match what's being passed from DataManagement.tsx
+// Define proper props interface
 export interface SupportContentManagementProps {
   faqs: any[];
   onUpdateFaqs: (data: any[]) => void;
